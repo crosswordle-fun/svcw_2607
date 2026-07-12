@@ -5,5 +5,9 @@
 	let { children } = $props();
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
+<svelte:head>
+	<link rel="icon" href={favicon} />
+	<title>Crosswordle</title>
+	<meta name="description" content="Crosswordle — a crossword-inspired word game." />
+</svelte:head>
 {@render children()}
