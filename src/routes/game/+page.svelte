@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import CraftModeView from '$lib/components/craft-mode-view.svelte';
 	import CrossModeView from '$lib/components/cross-mode-view.svelte';
 	import GameTabs from '$lib/components/game-tabs.svelte';
 	import LevelDisplay from '$lib/components/level-display.svelte';
@@ -32,6 +33,6 @@
 	{:else if gameMode === 'cross'}
 		<CrossModeView />
 	{:else}
-		<h1 class="text-2xl font-bold uppercase">{gameMode}</h1>
+		<CraftModeView />
 	{/if}
 </main>
