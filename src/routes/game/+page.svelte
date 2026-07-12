@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import CraftModeView from '$lib/components/craft-mode-view.svelte';
+	import FragRuneDisplay from '$lib/components/frag-rune-display.svelte';
 	import CrossModeView from '$lib/components/cross-mode-view.svelte';
 	import GameTabs from '$lib/components/game-tabs.svelte';
 	import LevelDisplay from '$lib/components/level-display.svelte';
@@ -11,6 +12,8 @@
 	type GameMode = 'cross' | 'wordle' | 'craft';
 
 	let gameMode: GameMode = $state('wordle');
+	const leftLetters = 'ABCDEFGHIJKLM'.split('');
+	const rightLetters = 'MNOPQRSTUVWXYZ'.split('');
 
 	onMount(() => {
 		function handleKeydown(event: KeyboardEvent) {
@@ -27,6 +30,10 @@
 
 <main class="flex min-h-screen flex-col items-center gap-8 pt-8">
 	<GameTabs {gameMode} onModeChange={(mode) => (gameMode = mode)} />
+	<div class="pointer-events-none fixed inset-x-4 top-1/2 flex -translate-y-1/2 justify-between">
+		<FragRuneDisplay letters={leftLetters} />
+		<FragRuneDisplay letters={rightLetters} />
+	</div>
 	{#if gameMode === 'wordle'}
 		<LevelDisplay />
 		<WordleModeView />
