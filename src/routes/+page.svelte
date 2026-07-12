@@ -1,9 +1,22 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import TiledTitle from '$lib/components/tiled-title.svelte';
 
 	const title = 'CROSSWORDLE';
+
+	onMount(() => {
+		function handleKeydown(event: KeyboardEvent) {
+			if (event.key === 'Enter') {
+				event.preventDefault();
+				goto(resolve('/game'));
+			}
+		}
+
+		window.addEventListener('keydown', handleKeydown);
+		return () => window.removeEventListener('keydown', handleKeydown);
+	});
 </script>
 
 <main class="flex min-h-screen items-center justify-center">
