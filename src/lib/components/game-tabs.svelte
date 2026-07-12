@@ -1,15 +1,30 @@
 <script lang="ts">
-	const tabs = ['CROSS', 'WORDLE', 'CRAFT'];
+	type GameMode = 'cross' | 'wordle' | 'craft';
+
+	let { gameMode, onModeChange }: { gameMode: GameMode; onModeChange: (mode: GameMode) => void } =
+		$props();
+
+	const tabs: { label: string; mode: GameMode }[] = [
+		{ label: 'CROSS', mode: 'cross' },
+		{ label: 'WORDLE', mode: 'wordle' },
+		{ label: 'CRAFT', mode: 'craft' }
+	];
 </script>
 
 <nav class="flex justify-center gap-2" aria-label="Game selection">
-	{#each tabs as tab}
+	{#each tabs as tab (tab.mode)}
 		<button
 			type="button"
 			role="tab"
-			class="w-48 cursor-pointer border-2 border-black bg-white px-6 py-3 text-lg font-medium text-black uppercase transition-colors hover:bg-black hover:text-white"
+			aria-selected={gameMode === tab.mode}
+			class={`w-48 cursor-pointer border-2 border-black px-6 py-3 text-lg font-medium uppercase transition-colors ${
+				gameMode === tab.mode
+					? 'bg-black text-white hover:bg-white hover:text-black'
+					: 'bg-white text-black hover:bg-black hover:text-white'
+			}`}
+			onclick={() => onModeChange(tab.mode)}
 		>
-			{tab}
+			{tab.label}
 		</button>
 	{/each}
 </nav>
