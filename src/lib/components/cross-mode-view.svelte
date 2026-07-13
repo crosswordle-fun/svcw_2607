@@ -78,7 +78,9 @@
 					{#if tile.fragment.letter !== null && tile.rune.letter !== null}
 						<span class="absolute inset-1 bg-purple-400" aria-hidden="true"></span>
 					{/if}
-					<span class="absolute top-0.5 left-1 z-10 text-xs font-normal">{x},{y}</span>
+					<span class="absolute top-0.5 left-1 z-10 text-xs font-normal"
+						>{selectedX === x && selectedY === y ? '★' : `${x},${y}`}</span
+					>
 					<span class="relative z-10">{tile.fragment.letter ?? tile.rune.letter ?? ''}</span>
 					<span class="absolute right-1 bottom-0.5 z-10 text-sm font-normal"
 						>{selectedX === x && selectedY === y ? pendingLetter.toUpperCase() : ''}</span
