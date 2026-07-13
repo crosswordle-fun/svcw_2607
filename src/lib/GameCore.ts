@@ -182,22 +182,23 @@ export function placeRune(game: GameState, letter: string, x: number, y: number)
 	tile.rune.playerId = game.wordle.playerId;
 }
 
-export function craftSelectedRune(game: GameState, letter: string): void {
-	if (!isLowercaseAscii(letter)) return;
-	if (game.wordle.fragmentCounts[letter] < FRAGMENT_COST_PER_RUNE) return;
+export function craftSelectedRune(game: GameState, letter: string): string | null {
+	if (!isLowercaseAscii(letter)) return null;
+	if (game.wordle.fragmentCounts[letter] < FRAGMENT_COST_PER_RUNE) return null;
 
 	game.wordle.fragmentCounts[letter] -= FRAGMENT_COST_PER_RUNE;
 	game.wordle.runeCounts[letter] += 1;
+	return letter;
 }
 
-export function craftRandomRune(game: GameState, letters: string): void {
-	if (!isWord(letters)) return;
+export function craftRandomRune(game: GameState, letters: string): string | null {
+	if (!isWord(letters)) return null;
 
 	const required = emptyCounts();
 	for (const letter of letters) required[letter] += 1;
 
 	for (const letter in required) {
-		if (game.wordle.fragmentCounts[letter] < required[letter]) return;
+		if (game.wordle.fragmentCounts[letter] < required[letter]) return null;
 	}
 
 	for (const letter in required) {
@@ -206,6 +207,7 @@ export function craftRandomRune(game: GameState, letters: string): void {
 
 	const randomLetter = String.fromCharCode('a'.charCodeAt(0) + randomIndex(ALPHABET_SIZE));
 	game.wordle.runeCounts[randomLetter] += 1;
+	return randomLetter;
 }
 
 export function debugIncrementFragmentsAndRunes(game: GameState): void {

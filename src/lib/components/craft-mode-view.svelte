@@ -7,6 +7,7 @@
 	let letters = $state(Array(5).fill(''));
 	let inputs: HTMLInputElement[] = [];
 	let activeIndex = 0;
+	let lastCraftedRune = $state('');
 	let craftError = $state('');
 	let enteredLetters = $derived(letters.filter(Boolean));
 	let craftPrompt = $derived(
@@ -67,8 +68,11 @@
 				return;
 			}
 
-			craftSelectedRune(gameState, letter);
-			clearLetters();
+			const craftedRune = craftSelectedRune(gameState, letter);
+			if (craftedRune) {
+				lastCraftedRune = craftedRune;
+				clearLetters();
+			}
 		} else if (enteredLetters.length === 5 && new Set(enteredLetters).size !== 1) {
 			const word = enteredLetters.join('').toLowerCase();
 			const required: Record<string, number> = {};
@@ -83,8 +87,11 @@
 				return;
 			}
 
-			craftRandomRune(gameState, word);
-			clearLetters();
+			const craftedRune = craftRandomRune(gameState, word);
+			if (craftedRune) {
+				lastCraftedRune = craftedRune;
+				clearLetters();
+			}
 		}
 	}
 
@@ -142,6 +149,13 @@
 					{/if}
 				</div>
 			{/each}
+		</div>
+		<div
+			class={`flex size-24 items-center justify-center text-4xl font-medium text-black uppercase ${lastCraftedRune ? 'border-2 border-black bg-purple-400' : 'invisible'}`}
+			aria-hidden={!lastCraftedRune}
+			aria-label={lastCraftedRune ? `Last crafted rune: ${lastCraftedRune}` : undefined}
+		>
+			{lastCraftedRune}
 		</div>
 		<p class="h-6 text-center text-sm uppercase" aria-live="polite">{craftPrompt}</p>
 		<p class="h-6 text-center text-sm text-red-600" aria-live="assertive">{craftError}</p>
