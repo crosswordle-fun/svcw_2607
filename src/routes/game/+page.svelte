@@ -60,6 +60,6 @@
 	{:else if gameMode === 'cross'}
 		<CrossModeView {gameState} {resourceMode} />
 	{:else}
-		<CraftModeView />
+		<CraftModeView {gameState} />
 	{/if}
 </main>
