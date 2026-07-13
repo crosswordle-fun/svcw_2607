@@ -8,7 +8,7 @@
 	import GameTabs from '$lib/components/game-tabs.svelte';
 	import LevelDisplay from '$lib/components/level-display.svelte';
 	import WordleModeView from '$lib/components/wordle-mode-view.svelte';
-	import { createGameState, type GameState } from '$lib/GameCore';
+	import { createGameState, debugIncrementFragmentsAndRunes, type GameState } from '$lib/GameCore';
 
 	type GameMode = 'cross' | 'wordle' | 'craft';
 
@@ -26,6 +26,7 @@
 				resourceMode = resourceMode === 'fragments' ? 'runes' : 'fragments';
 				return;
 			}
+			if (event.key === '0') debugIncrementFragmentsAndRunes(gameState);
 			if (event.key === '1') gameMode = 'cross';
 			if (event.key === '2') gameMode = 'wordle';
 			if (event.key === '3') gameMode = 'craft';
