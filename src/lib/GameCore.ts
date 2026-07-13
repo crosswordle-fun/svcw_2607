@@ -175,7 +175,13 @@ export function placeRune(game: GameState, letter: string, x: number, y: number)
 	if (!isLowercaseAscii(letter)) return;
 
 	const tile = game.crossword.tiles[y]?.[x];
-	if (!tile || tile.rune.letter !== null || game.wordle.runeCounts[letter] === 0) return;
+	if (
+		!tile ||
+		tile.fragment.letter !== letter ||
+		tile.rune.letter !== null ||
+		game.wordle.runeCounts[letter] === 0
+	)
+		return;
 
 	game.wordle.runeCounts[letter] -= 1;
 	tile.rune.letter = letter;
