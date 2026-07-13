@@ -2,13 +2,28 @@
 	import { onMount } from 'svelte';
 	import { placeFragment, placeRune, type GameState } from '$lib/GameCore';
 
-	let {
-		gameState,
-		resourceMode
-	}: { gameState: GameState; resourceMode: 'fragments' | 'runes' } = $props();
+	let { gameState, resourceMode }: { gameState: GameState; resourceMode: 'fragments' | 'runes' } =
+		$props();
 	let selectedX = $state(4);
 	let selectedY = $state(4);
 	let pendingLetter = $state('');
+
+	function tileColorClass(
+		tile: (typeof gameState.crossword.tiles)[number][number],
+		selected: boolean
+	): string {
+		const hasFragment = tile.fragment.letter !== null;
+		const hasRune = tile.rune.letter !== null;
+
+		if (hasFragment && hasRune) return 'border-black bg-blue-400 text-black';
+		if (hasFragment) return 'border-black bg-blue-400 text-black';
+		if (hasRune) return 'border-black bg-purple-400 text-black';
+		if (selected)
+			return resourceMode === 'fragments'
+				? 'border-black bg-blue-300 text-black'
+				: 'border-black bg-purple-300 text-black';
+		return 'border-black bg-white text-black';
+	}
 
 	onMount(() => {
 		function handleKeydown(event: KeyboardEvent) {
@@ -57,12 +72,17 @@
 		{#each gameState.crossword.tiles as row, y (y)}
 			{#each row as tile, x (x)}
 				<div
-					class={`relative flex size-18 items-center justify-center border-2 border-black text-center text-2xl font-medium uppercase outline-none ${selectedX === x && selectedY === y ? (resourceMode === 'fragments' ? 'bg-blue-300 text-black' : 'bg-purple-300 text-black') : 'bg-white text-black'}`}
+					class={`relative flex size-18 items-center justify-center border-2 text-center text-2xl font-medium uppercase outline-none ${tileColorClass(tile, selectedX === x && selectedY === y)}`}
 					aria-label={`Square ${x},${y}, ${tile.fragment.letter ?? tile.rune.letter ?? 'empty'}`}
 				>
-					<span class="absolute top-0.5 left-1 text-xs font-normal">{x},{y}</span>
-					<span>{tile.fragment.letter ?? tile.rune.letter ?? ''}</span>
-					<span class="absolute right-1 bottom-0.5 text-sm font-normal">{selectedX === x && selectedY === y ? pendingLetter.toUpperCase() : ''}</span>
+					{#if tile.fragment.letter !== null && tile.rune.letter !== null}
+						<span class="absolute inset-1 bg-purple-400" aria-hidden="true"></span>
+					{/if}
+					<span class="absolute top-0.5 left-1 z-10 text-xs font-normal">{x},{y}</span>
+					<span class="relative z-10">{tile.fragment.letter ?? tile.rune.letter ?? ''}</span>
+					<span class="absolute right-1 bottom-0.5 z-10 text-sm font-normal"
+						>{selectedX === x && selectedY === y ? pendingLetter.toUpperCase() : ''}</span
+					>
 				</div>
 			{/each}
 		{/each}
