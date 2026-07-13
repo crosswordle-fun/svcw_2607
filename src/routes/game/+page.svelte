@@ -19,6 +19,12 @@
 	const leftLetters = 'ABCDEFGHIJKLM'.split('');
 	const rightLetters = 'MNOPQRSTUVWXYZ'.split('');
 
+	function changeGameMode(mode: GameMode) {
+		// Browsing previous Wordle levels is temporary; other modes always show the latest level.
+		displayedLevel = gameState.wordle.level;
+		gameMode = mode;
+	}
+
 	onMount(() => {
 		function handleKeydown(event: KeyboardEvent) {
 			if (event.key === 'Tab') {
@@ -27,9 +33,9 @@
 				return;
 			}
 			if (event.key === '0') debugIncrementFragmentsAndRunes(gameState);
-			if (event.key === '1') gameMode = 'cross';
-			if (event.key === '2') gameMode = 'wordle';
-			if (event.key === '3') gameMode = 'craft';
+			if (event.key === '1') changeGameMode('cross');
+			if (event.key === '2') changeGameMode('wordle');
+			if (event.key === '3') changeGameMode('craft');
 			if (event.key === 'Escape') goto(resolve('/'));
 		}
 
@@ -39,7 +45,10 @@
 </script>
 
 <main class="flex min-h-screen flex-col items-center gap-8 pt-8">
-	<GameTabs {gameMode} onModeChange={(mode) => (gameMode = mode)} />
+	<GameTabs {gameMode} onModeChange={changeGameMode} />
+	<div class="-mt-4">
+		<LevelDisplay level={displayedLevel} />
+	</div>
 	<div class="pointer-events-none fixed inset-x-4 top-1/2 flex -translate-y-1/2 justify-between">
 		<FragRuneDisplay
 			letters={leftLetters}
@@ -53,7 +62,6 @@
 		/>
 	</div>
 	{#if gameMode === 'wordle'}
-		<LevelDisplay level={displayedLevel} />
 		<WordleModeView
 			{gameState}
 			onWordChange={(level) => (displayedLevel = level)}
