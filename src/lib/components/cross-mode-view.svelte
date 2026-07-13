@@ -1,9 +1,17 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { placeFragment, placeRune, type GameState } from '$lib/GameCore';
+	import type { GameState } from '$lib/GameCore';
+	import { submitFragment, submitRune } from '$lib/gameApi';
 
-	let { gameState, resourceMode }: { gameState: GameState; resourceMode: 'fragments' | 'runes' } =
-		$props();
+	let {
+		gameState,
+		resourceMode,
+		onStateChange
+	}: {
+		gameState: GameState;
+		resourceMode: 'fragments' | 'runes';
+		onStateChange?: (gameState: GameState) => void;
+	} = $props();
 	let selectedX = $state(4);
 	let selectedY = $state(4);
 	let pendingLetter = $state('');
@@ -48,11 +56,29 @@
 
 				const tile = gameState.crossword.tiles[selectedY]?.[selectedX];
 				if (resourceMode === 'fragments') {
-					placeFragment(gameState, pendingLetter, selectedX, selectedY);
-					if (tile?.fragment.letter === pendingLetter) pendingLetter = '';
+					submitFragment(pendingLetter, selectedX, selectedY)
+						.then((nextState) => {
+							gameState = nextState;
+							onStateChange?.(nextState);
+							if (
+								nextState.crossword.tiles[selectedY]?.[selectedX]?.fragment.letter === pendingLetter
+							) {
+								pendingLetter = '';
+							}
+						})
+						.catch((error) => console.error('Unable to place fragment', error));
 				} else {
-					placeRune(gameState, pendingLetter, selectedX, selectedY);
-					if (tile?.rune.letter === pendingLetter) pendingLetter = '';
+					submitRune(pendingLetter, selectedX, selectedY)
+						.then((nextState) => {
+							gameState = nextState;
+							onStateChange?.(nextState);
+							if (
+								nextState.crossword.tiles[selectedY]?.[selectedX]?.rune.letter === pendingLetter
+							) {
+								pendingLetter = '';
+							}
+						})
+						.catch((error) => console.error('Unable to place rune', error));
 				}
 				return;
 			} else return;

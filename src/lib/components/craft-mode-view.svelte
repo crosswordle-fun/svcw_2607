@@ -1,8 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { craftRandomRune, craftSelectedRune, type GameState } from '$lib/GameCore';
+	import type { GameState } from '$lib/GameCore';
+	import { submitRandomRune, submitSelectedRune } from '$lib/gameApi';
 
-	let { gameState }: { gameState: GameState } = $props();
+	let {
+		gameState,
+		onStateChange
+	}: { gameState: GameState; onStateChange?: (gameState: GameState) => void } = $props();
 	const dieFaces = [true, false, true, false, true, false, true, false, true];
 	let letters = $state(Array(5).fill(''));
 	let inputs: HTMLInputElement[] = [];
@@ -58,7 +62,7 @@
 		focusInput(0);
 	}
 
-	function craft() {
+	async function craft() {
 		craftError = '';
 
 		if (enteredLetters.length === 3 && new Set(enteredLetters).size === 1) {
@@ -68,10 +72,14 @@
 				return;
 			}
 
-			const craftedRune = craftSelectedRune(gameState, letter);
-			if (craftedRune) {
-				lastCraftedRune = craftedRune;
+			try {
+				const nextState = await submitSelectedRune(letter);
+				gameState = nextState;
+				onStateChange?.(nextState);
+				lastCraftedRune = letter;
 				clearLetters();
+			} catch (error) {
+				console.error('Unable to craft selected rune', error);
 			}
 		} else if (enteredLetters.length === 5 && new Set(enteredLetters).size !== 1) {
 			const word = enteredLetters.join('').toLowerCase();
@@ -87,10 +95,18 @@
 				return;
 			}
 
-			const craftedRune = craftRandomRune(gameState, word);
-			if (craftedRune) {
-				lastCraftedRune = craftedRune;
+			try {
+				const previousRunes = gameState.wordle.runeCounts;
+				const nextState = await submitRandomRune(word);
+				const craftedLetter = Object.keys(nextState.wordle.runeCounts).find(
+					(letter) => nextState.wordle.runeCounts[letter] > (previousRunes[letter] ?? 0)
+				);
+				gameState = nextState;
+				onStateChange?.(nextState);
+				lastCraftedRune = craftedLetter ?? 'RUNE';
 				clearLetters();
+			} catch (error) {
+				console.error('Unable to craft random rune', error);
 			}
 		}
 	}

@@ -8,12 +8,13 @@
 	import GameTabs from '$lib/components/game-tabs.svelte';
 	import LevelDisplay from '$lib/components/level-display.svelte';
 	import WordleModeView from '$lib/components/wordle-mode-view.svelte';
-	import { createGameState, debugIncrementFragmentsAndRunes, type GameState } from '$lib/GameCore';
+	import { createGameState, type GameState } from '$lib/GameCore';
+	import { getGameState, incrementDebugResources } from '$lib/gameApi';
 
 	type GameMode = 'cross' | 'wordle' | 'craft';
 
 	let gameState = $state<GameState>(createGameState());
-	let displayedLevel = $state(gameState.wordle.level);
+	let displayedLevel = $state(0);
 	let resourceMode: 'fragments' | 'runes' = $state('fragments');
 	let gameMode: GameMode = $state('wordle');
 	const leftLetters = 'ABCDEFGHIJKLM'.split('');
@@ -26,13 +27,24 @@
 	}
 
 	onMount(() => {
+		getGameState()
+			.then((nextState) => {
+				gameState = nextState;
+				displayedLevel = nextState.wordle.level;
+			})
+			.catch((error) => console.error('Unable to connect to the game server', error));
+
 		function handleKeydown(event: KeyboardEvent) {
 			if (event.key === 'Tab') {
 				event.preventDefault();
 				resourceMode = resourceMode === 'fragments' ? 'runes' : 'fragments';
 				return;
 			}
-			if (event.key === '0') debugIncrementFragmentsAndRunes(gameState);
+			if (event.key === '0') {
+				incrementDebugResources()
+					.then((nextState) => (gameState = nextState))
+					.catch((error) => console.error('Unable to update debug resources', error));
+			}
 			if (event.key === '1') changeGameMode('cross');
 			if (event.key === '2') changeGameMode('wordle');
 			if (event.key === '3') changeGameMode('craft');
@@ -52,23 +64,32 @@
 	<div class="pointer-events-none fixed inset-x-4 top-1/2 flex -translate-y-1/2 justify-between">
 		<FragRuneDisplay
 			letters={leftLetters}
-			counts={resourceMode === 'fragments' ? gameState.wordle.fragmentCounts : gameState.wordle.runeCounts}
+			counts={resourceMode === 'fragments'
+				? gameState.wordle.fragmentCounts
+				: gameState.wordle.runeCounts}
 			kind={resourceMode}
 		/>
 		<FragRuneDisplay
 			letters={rightLetters}
-			counts={resourceMode === 'fragments' ? gameState.wordle.fragmentCounts : gameState.wordle.runeCounts}
+			counts={resourceMode === 'fragments'
+				? gameState.wordle.fragmentCounts
+				: gameState.wordle.runeCounts}
 			kind={resourceMode}
 		/>
 	</div>
 	{#if gameMode === 'wordle'}
 		<WordleModeView
 			{gameState}
+			onStateChange={(nextState) => (gameState = nextState)}
 			onWordChange={(level) => (displayedLevel = level)}
 		/>
 	{:else if gameMode === 'cross'}
-		<CrossModeView {gameState} {resourceMode} />
+		<CrossModeView
+			{gameState}
+			{resourceMode}
+			onStateChange={(nextState) => (gameState = nextState)}
+		/>
 	{:else}
-		<CraftModeView {gameState} />
+		<CraftModeView {gameState} onStateChange={(nextState) => (gameState = nextState)} />
 	{/if}
 </main>

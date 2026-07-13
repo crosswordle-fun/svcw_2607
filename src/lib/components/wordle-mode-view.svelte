@@ -1,12 +1,18 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { guessWordle, type GameState, type Hint } from '$lib/GameCore';
+	import type { GameState, Hint } from '$lib/GameCore';
+	import { submitWordleGuess } from '$lib/gameApi';
 	import WordleInput from '$lib/components/wordle-input.svelte';
 
 	let {
 		gameState,
+		onStateChange,
 		onWordChange
-	}: { gameState: GameState; onWordChange?: (level: number) => void } = $props();
+	}: {
+		gameState: GameState;
+		onStateChange?: (gameState: GameState) => void;
+		onWordChange?: (level: number) => void;
+	} = $props();
 	let selectedGuessIndex = $state(-1);
 	let selectedWordIndex = $state(0);
 	let visibleEnd = $state(0);
@@ -26,18 +32,22 @@
 		onWordChange?.(gameState.wordle.level);
 	}
 
-	function submitGuess(word: string) {
+	async function submitGuess(word: string) {
 		showLatestWord();
-		guessWordle(gameState, word);
-		showLatestWord();
+		try {
+			const nextState = await submitWordleGuess(word);
+			gameState = nextState;
+			onStateChange?.(nextState);
+			showLatestWord();
+		} catch (error) {
+			console.error('Unable to submit Wordle guess', error);
+		}
 	}
 
 	function selectWord(index: number) {
 		const latestIndex = gameState.wordle.previousWords.length;
 		selectedWordIndex = Math.max(0, Math.min(index, latestIndex));
-		onWordChange?.(
-			selectedWordIndex === latestIndex ? gameState.wordle.level : selectedWordIndex
-		);
+		onWordChange?.(selectedWordIndex === latestIndex ? gameState.wordle.level : selectedWordIndex);
 		const guesses =
 			selectedWordIndex === latestIndex
 				? gameState.wordle.currentWord.guesses
