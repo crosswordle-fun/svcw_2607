@@ -92,7 +92,8 @@ export function createTile(): Tile {
 }
 
 export function createWordle(index: number): Wordle {
-	const word = WORDLE_LIST[((index % WORDLE_LIST.length) + WORDLE_LIST.length) % WORDLE_LIST.length];
+	const word =
+		WORDLE_LIST[((index % WORDLE_LIST.length) + WORDLE_LIST.length) % WORDLE_LIST.length];
 
 	return {
 		truth: word,
