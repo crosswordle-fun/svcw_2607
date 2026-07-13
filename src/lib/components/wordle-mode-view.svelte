@@ -1,12 +1,45 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { guessWordle, type GameState, type Hint } from '$lib/GameCore';
 	import WordleInput from '$lib/components/wordle-input.svelte';
 
 	let { gameState }: { gameState: GameState } = $props();
+	let selectedGuessIndex = $state(-1);
+	let visibleEnd = $state(0);
+	let visibleStart = $derived(Math.max(0, visibleEnd - 5));
+	let visibleGuesses = $derived(
+		gameState.wordle.currentWord.guesses.slice(visibleStart, visibleEnd)
+	);
 
 	function submitGuess(word: string) {
 		guessWordle(gameState, word);
+		const guesses = gameState.wordle.currentWord.guesses;
+		visibleEnd = guesses.length;
+		selectedGuessIndex = guesses.length - 1;
 	}
+
+	function handleGuessNavigation(event: KeyboardEvent) {
+		if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+
+		const guesses = gameState.wordle.currentWord.guesses;
+		if (guesses.length === 0) return;
+
+		event.preventDefault();
+		const direction = event.key === 'ArrowUp' ? -1 : 1;
+		selectedGuessIndex = Math.max(0, Math.min(selectedGuessIndex + direction, guesses.length - 1));
+
+		// Move the five-guess viewport when navigation reaches either edge.
+		if (selectedGuessIndex < visibleStart) visibleEnd = selectedGuessIndex + 5;
+		if (selectedGuessIndex >= visibleEnd) visibleEnd = selectedGuessIndex + 1;
+	}
+
+	onMount(() => {
+		const guesses = gameState.wordle.currentWord.guesses;
+		visibleEnd = guesses.length;
+		selectedGuessIndex = guesses.length - 1;
+		window.addEventListener('keydown', handleGuessNavigation);
+		return () => window.removeEventListener('keydown', handleGuessNavigation);
+	});
 
 	function tileClass(hint: Hint): string {
 		if (hint === 'Correct') return 'bg-green-400';
@@ -17,8 +50,11 @@
 
 <div class="pointer-events-none fixed inset-0 flex flex-col items-center justify-end gap-6 pb-24">
 	<div class="flex flex-col gap-2" aria-label="Wordle guesses">
-		{#each gameState.wordle.currentWord.guesses as guess, guessIndex (guessIndex)}
-			<div class="flex gap-2">
+		{#each visibleGuesses as guess, guessIndex (visibleStart + guessIndex)}
+			<div
+				class={`flex gap-2 ${selectedGuessIndex === visibleStart + guessIndex ? 'rounded ring-4 ring-blue-500' : ''}`}
+				aria-current={selectedGuessIndex === visibleStart + guessIndex ? 'true' : undefined}
+			>
 				{#each guess.hints as hint, index (index)}
 					<div
 						class={`flex size-24 items-center justify-center border-2 border-black text-4xl font-medium text-black uppercase ${tileClass(hint)}`}
