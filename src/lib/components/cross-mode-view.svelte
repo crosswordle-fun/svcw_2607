@@ -16,7 +16,6 @@
 	let selectedY = $state(4);
 	let pendingLetter = $state('');
 	const VIEW_SIZE = 5;
-	const VIEW_RADIUS = Math.floor(VIEW_SIZE / 2);
 	let gridWidth = $derived(gameState.crossword.tiles[0]?.length ?? 0);
 	let gridHeight = $derived(gameState.crossword.tiles.length);
 
@@ -24,9 +23,9 @@
 		return length > 0 ? ((index % length) + length) % length : 0;
 	}
 
-	// Keep the selected tile centered while allowing the viewport to wrap around the grid.
-	let visibleStartX = $derived(wrapIndex(selectedX - VIEW_RADIUS, gridWidth));
-	let visibleStartY = $derived(wrapIndex(selectedY - VIEW_RADIUS, gridHeight));
+	// The viewport moves only when the selection would leave its inner 3x3 area.
+	let visibleStartX = $state(2);
+	let visibleStartY = $state(2);
 
 	function tileColorClass(
 		tile: (typeof gameState.crossword.tiles)[number][number],
@@ -49,12 +48,22 @@
 		function handleKeydown(event: KeyboardEvent) {
 			let nextX = selectedX;
 			let nextY = selectedY;
+			let deltaX = 0;
+			let deltaY = 0;
 
-			if (event.key === 'ArrowLeft') nextX -= 1;
-			else if (event.key === 'ArrowRight') nextX += 1;
-			else if (event.key === 'ArrowUp') nextY -= 1;
-			else if (event.key === 'ArrowDown') nextY += 1;
-			else if (/^[a-zA-Z]$/.test(event.key)) {
+			if (event.key === 'ArrowLeft') {
+				nextX -= 1;
+				deltaX = -1;
+			} else if (event.key === 'ArrowRight') {
+				nextX += 1;
+				deltaX = 1;
+			} else if (event.key === 'ArrowUp') {
+				nextY -= 1;
+				deltaY = -1;
+			} else if (event.key === 'ArrowDown') {
+				nextY += 1;
+				deltaY = 1;
+			} else if (/^[a-zA-Z]$/.test(event.key)) {
 				event.preventDefault();
 				pendingLetter = event.key.toLowerCase();
 				return;
@@ -95,8 +104,27 @@
 			} else return;
 
 			event.preventDefault();
-			selectedX = wrapIndex(nextX, gridWidth);
-			selectedY = wrapIndex(nextY, gridHeight);
+			nextX = wrapIndex(nextX, gridWidth);
+			nextY = wrapIndex(nextY, gridHeight);
+
+			const currentOffsetX = wrapIndex(selectedX - visibleStartX, gridWidth);
+			const currentOffsetY = wrapIndex(selectedY - visibleStartY, gridHeight);
+
+			// Shift only when leaving the inner 3x3, not merely because the
+			// destination is no longer at the viewport's outer edge.
+			if (deltaX < 0 && currentOffsetX === 1) {
+				visibleStartX = wrapIndex(nextX - 1, gridWidth);
+			} else if (deltaX > 0 && currentOffsetX === 3) {
+				visibleStartX = wrapIndex(nextX - 3, gridWidth);
+			}
+			if (deltaY < 0 && currentOffsetY === 1) {
+				visibleStartY = wrapIndex(nextY - 1, gridHeight);
+			} else if (deltaY > 0 && currentOffsetY === 3) {
+				visibleStartY = wrapIndex(nextY - 3, gridHeight);
+			}
+
+			selectedX = nextX;
+			selectedY = nextY;
 		}
 
 		window.addEventListener('keydown', handleKeydown);
