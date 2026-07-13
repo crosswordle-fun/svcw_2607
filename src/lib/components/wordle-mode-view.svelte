@@ -86,10 +86,10 @@
 </script>
 
 <div class="pointer-events-none fixed inset-0 flex flex-col items-center justify-end gap-6 pb-24">
-	<div class="flex flex-col gap-2" aria-label="Wordle guesses">
+	<div class="flex flex-col gap-4" aria-label="Wordle guesses">
 		{#each visibleGuesses as guess, guessIndex (selectedWordIndex + ':' + (visibleStart + guessIndex))}
 			<div
-				class={`flex gap-2 ${selectedGuessIndex === visibleStart + guessIndex ? 'rounded ring-4 ring-blue-500' : ''}`}
+				class={`flex gap-2 ${selectedGuessIndex === visibleStart + guessIndex ? 'ring-4 ring-black ring-offset-4 ring-offset-white' : ''}`}
 				aria-current={selectedGuessIndex === visibleStart + guessIndex ? 'true' : undefined}
 			>
 				{#each guess.hints as hint, index (index)}
