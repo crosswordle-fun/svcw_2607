@@ -13,6 +13,7 @@
 	type GameMode = 'cross' | 'wordle' | 'craft';
 
 	let gameState = $state<GameState>(createGameState());
+	let displayedLevel = $state(gameState.wordle.level);
 	let gameMode: GameMode = $state('wordle');
 	const leftLetters = 'ABCDEFGHIJKLM'.split('');
 	const rightLetters = 'MNOPQRSTUVWXYZ'.split('');
@@ -37,8 +38,11 @@
 		<FragRuneDisplay letters={rightLetters} />
 	</div>
 	{#if gameMode === 'wordle'}
-		<LevelDisplay />
-		<WordleModeView {gameState} />
+		<LevelDisplay level={displayedLevel} />
+		<WordleModeView
+			{gameState}
+			onWordChange={(level) => (displayedLevel = level)}
+		/>
 	{:else if gameMode === 'cross'}
 		<CrossModeView {gameState} />
 	{:else}

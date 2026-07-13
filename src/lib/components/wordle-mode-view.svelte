@@ -3,25 +3,64 @@
 	import { guessWordle, type GameState, type Hint } from '$lib/GameCore';
 	import WordleInput from '$lib/components/wordle-input.svelte';
 
-	let { gameState }: { gameState: GameState } = $props();
+	let {
+		gameState,
+		onWordChange
+	}: { gameState: GameState; onWordChange?: (level: number) => void } = $props();
 	let selectedGuessIndex = $state(-1);
+	let selectedWordIndex = $state(0);
 	let visibleEnd = $state(0);
 	let visibleStart = $derived(Math.max(0, visibleEnd - 5));
-	let visibleGuesses = $derived(
-		gameState.wordle.currentWord.guesses.slice(visibleStart, visibleEnd)
+	let displayedWord = $derived(
+		selectedWordIndex === gameState.wordle.previousWords.length
+			? gameState.wordle.currentWord
+			: gameState.wordle.previousWords[selectedWordIndex]
 	);
+	let visibleGuesses = $derived(displayedWord?.guesses.slice(visibleStart, visibleEnd) ?? []);
+
+	function showLatestWord() {
+		selectedWordIndex = gameState.wordle.previousWords.length;
+		const guesses = gameState.wordle.currentWord.guesses;
+		visibleEnd = guesses.length;
+		selectedGuessIndex = guesses.length - 1;
+		onWordChange?.(gameState.wordle.level);
+	}
 
 	function submitGuess(word: string) {
+		showLatestWord();
 		guessWordle(gameState, word);
-		const guesses = gameState.wordle.currentWord.guesses;
+		showLatestWord();
+	}
+
+	function selectWord(index: number) {
+		const latestIndex = gameState.wordle.previousWords.length;
+		selectedWordIndex = Math.max(0, Math.min(index, latestIndex));
+		onWordChange?.(
+			selectedWordIndex === latestIndex ? gameState.wordle.level : selectedWordIndex
+		);
+		const guesses =
+			selectedWordIndex === latestIndex
+				? gameState.wordle.currentWord.guesses
+				: gameState.wordle.previousWords[selectedWordIndex].guesses;
 		visibleEnd = guesses.length;
 		selectedGuessIndex = guesses.length - 1;
 	}
 
 	function handleGuessNavigation(event: KeyboardEvent) {
+		if (/^[a-zA-Z]$/.test(event.key)) {
+			showLatestWord();
+			return;
+		}
+
+		if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+			event.preventDefault();
+			selectWord(selectedWordIndex + (event.key === 'ArrowLeft' ? -1 : 1));
+			return;
+		}
+
 		if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
 
-		const guesses = gameState.wordle.currentWord.guesses;
+		const guesses = displayedWord?.guesses ?? [];
 		if (guesses.length === 0) return;
 
 		event.preventDefault();
@@ -34,9 +73,7 @@
 	}
 
 	onMount(() => {
-		const guesses = gameState.wordle.currentWord.guesses;
-		visibleEnd = guesses.length;
-		selectedGuessIndex = guesses.length - 1;
+		showLatestWord();
 		window.addEventListener('keydown', handleGuessNavigation);
 		return () => window.removeEventListener('keydown', handleGuessNavigation);
 	});
@@ -50,7 +87,7 @@
 
 <div class="pointer-events-none fixed inset-0 flex flex-col items-center justify-end gap-6 pb-24">
 	<div class="flex flex-col gap-2" aria-label="Wordle guesses">
-		{#each visibleGuesses as guess, guessIndex (visibleStart + guessIndex)}
+		{#each visibleGuesses as guess, guessIndex (selectedWordIndex + ':' + (visibleStart + guessIndex))}
 			<div
 				class={`flex gap-2 ${selectedGuessIndex === visibleStart + guessIndex ? 'rounded ring-4 ring-blue-500' : ''}`}
 				aria-current={selectedGuessIndex === visibleStart + guessIndex ? 'true' : undefined}
