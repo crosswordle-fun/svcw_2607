@@ -58,7 +58,7 @@
 			onWordChange={(level) => (displayedLevel = level)}
 		/>
 	{:else if gameMode === 'cross'}
-		<CrossModeView {gameState} />
+		<CrossModeView {gameState} {resourceMode} />
 	{:else}
 		<CraftModeView />
 	{/if}
