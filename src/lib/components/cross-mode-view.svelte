@@ -15,6 +15,18 @@
 	let selectedX = $state(4);
 	let selectedY = $state(4);
 	let pendingLetter = $state('');
+	const VIEW_SIZE = 5;
+	const VIEW_RADIUS = Math.floor(VIEW_SIZE / 2);
+	let gridWidth = $derived(gameState.crossword.tiles[0]?.length ?? 0);
+	let gridHeight = $derived(gameState.crossword.tiles.length);
+
+	function wrapIndex(index: number, length: number): number {
+		return length > 0 ? ((index % length) + length) % length : 0;
+	}
+
+	// Keep the selected tile centered while allowing the viewport to wrap around the grid.
+	let visibleStartX = $derived(wrapIndex(selectedX - VIEW_RADIUS, gridWidth));
+	let visibleStartY = $derived(wrapIndex(selectedY - VIEW_RADIUS, gridHeight));
 
 	function tileColorClass(
 		tile: (typeof gameState.crossword.tiles)[number][number],
@@ -54,7 +66,6 @@
 				event.preventDefault();
 				if (!pendingLetter) return;
 
-				const tile = gameState.crossword.tiles[selectedY]?.[selectedX];
 				if (resourceMode === 'fragments') {
 					submitFragment(pendingLetter, selectedX, selectedY)
 						.then((nextState) => {
@@ -84,8 +95,8 @@
 			} else return;
 
 			event.preventDefault();
-			selectedX = Math.max(0, Math.min(nextX, gameState.crossword.tiles[0].length - 1));
-			selectedY = Math.max(0, Math.min(nextY, gameState.crossword.tiles.length - 1));
+			selectedX = wrapIndex(nextX, gridWidth);
+			selectedY = wrapIndex(nextY, gridHeight);
 		}
 
 		window.addEventListener('keydown', handleKeydown);
@@ -94,21 +105,24 @@
 </script>
 
 <div class="pointer-events-none fixed inset-0 grid place-items-center">
-	<div class="grid grid-cols-9 gap-2" aria-label="Crossword grid">
-		{#each gameState.crossword.tiles as row, y (y)}
-			{#each row as tile, x (x)}
+	<div class="grid grid-cols-5 gap-2" aria-label="Crossword grid viewport">
+		{#each Array.from({ length: VIEW_SIZE }) as _, rowOffset (rowOffset)}
+			{@const y = wrapIndex(visibleStartY + rowOffset, gridHeight)}
+			{#each Array.from({ length: VIEW_SIZE }) as _, columnOffset (columnOffset)}
+				{@const x = wrapIndex(visibleStartX + columnOffset, gridWidth)}
+				{@const tile = gameState.crossword.tiles[y][x]}
 				<div
-					class={`relative flex size-18 items-center justify-center border-2 text-center text-2xl font-medium uppercase outline-none ${tileColorClass(tile, selectedX === x && selectedY === y)}`}
+					class={`relative flex size-28 items-center justify-center border-2 text-center text-4xl font-medium uppercase outline-none ${tileColorClass(tile, selectedX === x && selectedY === y)}`}
 					aria-label={`Square ${x},${y}, ${tile.fragment.letter ?? tile.rune.letter ?? 'empty'}`}
 				>
 					{#if tile.fragment.letter !== null && tile.rune.letter !== null}
 						<span class="absolute inset-1 bg-purple-400" aria-hidden="true"></span>
 					{/if}
-					<span class="absolute top-0.5 left-1 z-10 text-xs font-normal"
+					<span class="absolute top-1 left-2 z-10 text-base font-normal"
 						>{selectedX === x && selectedY === y ? '★' : `${x},${y}`}</span
 					>
 					<span class="relative z-10">{tile.fragment.letter ?? tile.rune.letter ?? ''}</span>
-					<span class="absolute right-1 bottom-0.5 z-10 text-sm font-normal"
+					<span class="absolute right-2 bottom-1 z-10 text-xl font-normal"
 						>{selectedX === x && selectedY === y ? pendingLetter.toUpperCase() : ''}</span
 					>
 				</div>
