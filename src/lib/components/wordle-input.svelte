@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
+	let { onSubmit }: { onSubmit: (word: string) => void } = $props();
 	let letters = $state(Array(5).fill(''));
 	let inputs: HTMLInputElement[] = [];
 	let activeIndex = 0;
@@ -55,7 +56,25 @@
 		}
 	}
 
+	function clearLetters() {
+		for (let index = 0; index < letters.length; index++) setLetter(index, '');
+		focusInput(0);
+	}
+
+	function submit() {
+		if (letters.some((letter) => !letter)) return;
+
+		onSubmit(letters.join('').toLowerCase());
+		clearLetters();
+	}
+
 	function handleKeydown(index: number, event: KeyboardEvent) {
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			submit();
+			return;
+		}
+
 		if (event.key.length === 1 && !/^[a-zA-Z]$/.test(event.key)) {
 			event.preventDefault();
 			return;

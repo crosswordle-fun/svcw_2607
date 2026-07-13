@@ -8,9 +8,11 @@
 	import GameTabs from '$lib/components/game-tabs.svelte';
 	import LevelDisplay from '$lib/components/level-display.svelte';
 	import WordleModeView from '$lib/components/wordle-mode-view.svelte';
+	import { createGameState, type GameState } from '$lib/GameCore';
 
 	type GameMode = 'cross' | 'wordle' | 'craft';
 
+	let gameState = $state<GameState>(createGameState());
 	let gameMode: GameMode = $state('wordle');
 	const leftLetters = 'ABCDEFGHIJKLM'.split('');
 	const rightLetters = 'MNOPQRSTUVWXYZ'.split('');
@@ -36,9 +38,9 @@
 	</div>
 	{#if gameMode === 'wordle'}
 		<LevelDisplay />
-		<WordleModeView />
+		<WordleModeView {gameState} />
 	{:else if gameMode === 'cross'}
-		<CrossModeView />
+		<CrossModeView {gameState} />
 	{:else}
 		<CraftModeView />
 	{/if}
