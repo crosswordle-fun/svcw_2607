@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { GameState } from '$lib/GameCore';
+	import CrossTileInfo from '$lib/components/cross-tile-info.svelte';
 	import { submitFragment, submitRune } from '$lib/gameApi';
 
 	let {
@@ -27,6 +28,7 @@
 	let pendingLetter = $state('');
 	let gridWidth = $derived(gameState.crossword.tiles[0]?.length ?? 0);
 	let gridHeight = $derived(gameState.crossword.tiles.length);
+	let selectedTile = $derived(gameState.crossword.tiles[selectedY]?.[selectedX]);
 
 	function wrapIndex(index: number, length: number): number {
 		return length > 0 ? ((index % length) + length) % length : 0;
@@ -161,34 +163,37 @@
 </script>
 
 <div class="pointer-events-none fixed inset-0 grid place-items-center">
-	<div
-		class="grid gap-2"
-		style={`grid-template-columns: repeat(${viewportColumns}, minmax(0, 1fr))`}
-		aria-label="Crossword grid viewport"
-	>
-		{#if gridWidth > 0 && gridHeight > 0}
-			{#each Array.from({ length: viewportRows }) as _, rowOffset (rowOffset)}
-				{@const y = wrapIndex(visibleStartY + rowOffset, gridHeight)}
-				{#each Array.from({ length: viewportColumns }) as _, columnOffset (columnOffset)}
-					{@const x = wrapIndex(visibleStartX + columnOffset, gridWidth)}
-					{@const tile = gameState.crossword.tiles[y][x]}
-					<div
-						class={`relative flex size-24 items-center justify-center border-2 text-center text-4xl font-medium uppercase outline-none ${tileColorClass(tile, selectedX === x && selectedY === y)}`}
-						aria-label={`Square ${x},${y}, ${tile.fragment.letter ?? tile.rune.letter ?? 'empty'}`}
-					>
-						{#if tile.fragment.letter !== null && tile.rune.letter !== null}
-							<span class="absolute inset-1 bg-purple-400" aria-hidden="true"></span>
-						{/if}
-						<span class="absolute top-1 left-2 z-10 text-base font-normal"
-							>{selectedX === x && selectedY === y ? '★' : `${x},${y}`}</span
+	<div class="flex w-max max-w-[calc(100vw-2rem)] flex-col items-center gap-4">
+		<div
+			class="grid gap-2"
+			style={`grid-template-columns: repeat(${viewportColumns}, minmax(0, 1fr))`}
+			aria-label="Crossword grid viewport"
+		>
+			{#if gridWidth > 0 && gridHeight > 0}
+				{#each Array.from({ length: viewportRows }) as _, rowOffset (rowOffset)}
+					{@const y = wrapIndex(visibleStartY + rowOffset, gridHeight)}
+					{#each Array.from({ length: viewportColumns }) as _, columnOffset (columnOffset)}
+						{@const x = wrapIndex(visibleStartX + columnOffset, gridWidth)}
+						{@const tile = gameState.crossword.tiles[y][x]}
+						<div
+							class={`relative flex size-24 items-center justify-center border-2 text-center text-4xl font-medium uppercase outline-none ${tileColorClass(tile, selectedX === x && selectedY === y)}`}
+							aria-label={`Square ${x},${y}, ${tile.fragment.letter ?? tile.rune.letter ?? 'empty'}`}
 						>
-						<span class="relative z-10">{tile.fragment.letter ?? tile.rune.letter ?? ''}</span>
-						<span class="absolute right-2 bottom-1 z-10 text-xl font-normal"
-							>{selectedX === x && selectedY === y ? pendingLetter.toUpperCase() : ''}</span
-						>
-					</div>
+							{#if tile.fragment.letter !== null && tile.rune.letter !== null}
+								<span class="absolute inset-1 bg-purple-400" aria-hidden="true"></span>
+							{/if}
+							<span class="absolute top-1 left-2 z-10 text-base font-normal"
+								>{selectedX === x && selectedY === y ? '★' : `${x},${y}`}</span
+							>
+							<span class="relative z-10">{tile.fragment.letter ?? tile.rune.letter ?? ''}</span>
+							<span class="absolute right-2 bottom-1 z-10 text-xl font-normal"
+								>{selectedX === x && selectedY === y ? pendingLetter.toUpperCase() : ''}</span
+							>
+						</div>
+					{/each}
 				{/each}
-			{/each}
-		{/if}
+			{/if}
+		</div>
+		<CrossTileInfo tile={selectedTile} x={selectedX} y={selectedY} />
 	</div>
 </div>
