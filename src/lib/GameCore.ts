@@ -2,8 +2,6 @@ export const WORDLE_LIST = ['apple', 'cross', 'jesus', 'slate', 'elton'] as cons
 export const WORDLE_LENGTH = 5;
 export const ALPHABET_SIZE = 26;
 export const WORDLE_EXPERIENCE_REWARD = 100;
-export const GRID_ROWS = 9;
-export const GRID_TILES_PER_ROW = 9;
 export const FRAGMENT_COST_PER_RUNE = 3;
 
 export type LetterCounts = Record<string, number>;
@@ -117,7 +115,9 @@ export function createGameState(): GameState {
 			currentWord: createWordle(0),
 			previousWords: []
 		},
-		crossword: { tiles: createTileGrid(GRID_ROWS, GRID_TILES_PER_ROW) }
+		// The crossword is supplied by the backend. Keep the local fallback
+		// dimensionless so it cannot drift from the server's grid size.
+		crossword: { tiles: [] }
 	};
 }
 

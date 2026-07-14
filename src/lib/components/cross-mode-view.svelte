@@ -22,8 +22,8 @@
 			throw new Error(`Crossword viewport${axis} must be an odd integer of at least 3`);
 		}
 	}
-	let selectedX = $state(4);
-	let selectedY = $state(4);
+	let selectedX = $state(0);
+	let selectedY = $state(0);
 	let pendingLetter = $state('');
 	let gridWidth = $derived(gameState.crossword.tiles[0]?.length ?? 0);
 	let gridHeight = $derived(gameState.crossword.tiles.length);
@@ -35,6 +35,22 @@
 	// The viewport moves only when the selection would leave its inner 3x3 area.
 	let visibleStartX = $state(0);
 	let visibleStartY = $state(0);
+	let previousGridWidth = 0;
+	let previousGridHeight = 0;
+
+	// The initial client state has no crossword dimensions. Re-center once the
+	// full grid arrives from the API, without making the viewport depend on it.
+	$effect(() => {
+		if (gridWidth === previousGridWidth && gridHeight === previousGridHeight) return;
+		previousGridWidth = gridWidth;
+		previousGridHeight = gridHeight;
+		if (gridWidth === 0 || gridHeight === 0) return;
+
+		selectedX = wrapIndex(selectedX, gridWidth);
+		selectedY = wrapIndex(selectedY, gridHeight);
+		visibleStartX = wrapIndex(selectedX - Math.floor(viewportColumns / 2), gridWidth);
+		visibleStartY = wrapIndex(selectedY - Math.floor(viewportRows / 2), gridHeight);
+	});
 
 	function tileColorClass(
 		tile: (typeof gameState.crossword.tiles)[number][number],
@@ -56,8 +72,6 @@
 	onMount(() => {
 		assertValidViewportSize(viewportRows, 'Rows');
 		assertValidViewportSize(viewportColumns, 'Columns');
-		visibleStartX = wrapIndex(selectedX - Math.floor(viewportColumns / 2), gridWidth);
-		visibleStartY = wrapIndex(selectedY - Math.floor(viewportRows / 2), gridHeight);
 
 		function handleKeydown(event: KeyboardEvent) {
 			let nextX = selectedX;
@@ -152,27 +166,29 @@
 		style={`grid-template-columns: repeat(${viewportColumns}, minmax(0, 1fr))`}
 		aria-label="Crossword grid viewport"
 	>
-		{#each Array.from({ length: viewportRows }) as _, rowOffset (rowOffset)}
-			{@const y = wrapIndex(visibleStartY + rowOffset, gridHeight)}
-			{#each Array.from({ length: viewportColumns }) as _, columnOffset (columnOffset)}
-				{@const x = wrapIndex(visibleStartX + columnOffset, gridWidth)}
-				{@const tile = gameState.crossword.tiles[y][x]}
-				<div
-					class={`relative flex size-24 items-center justify-center border-2 text-center text-4xl font-medium uppercase outline-none ${tileColorClass(tile, selectedX === x && selectedY === y)}`}
-					aria-label={`Square ${x},${y}, ${tile.fragment.letter ?? tile.rune.letter ?? 'empty'}`}
-				>
-					{#if tile.fragment.letter !== null && tile.rune.letter !== null}
-						<span class="absolute inset-1 bg-purple-400" aria-hidden="true"></span>
-					{/if}
-					<span class="absolute top-1 left-2 z-10 text-base font-normal"
-						>{selectedX === x && selectedY === y ? '★' : `${x},${y}`}</span
+		{#if gridWidth > 0 && gridHeight > 0}
+			{#each Array.from({ length: viewportRows }) as _, rowOffset (rowOffset)}
+				{@const y = wrapIndex(visibleStartY + rowOffset, gridHeight)}
+				{#each Array.from({ length: viewportColumns }) as _, columnOffset (columnOffset)}
+					{@const x = wrapIndex(visibleStartX + columnOffset, gridWidth)}
+					{@const tile = gameState.crossword.tiles[y][x]}
+					<div
+						class={`relative flex size-24 items-center justify-center border-2 text-center text-4xl font-medium uppercase outline-none ${tileColorClass(tile, selectedX === x && selectedY === y)}`}
+						aria-label={`Square ${x},${y}, ${tile.fragment.letter ?? tile.rune.letter ?? 'empty'}`}
 					>
-					<span class="relative z-10">{tile.fragment.letter ?? tile.rune.letter ?? ''}</span>
-					<span class="absolute right-2 bottom-1 z-10 text-xl font-normal"
-						>{selectedX === x && selectedY === y ? pendingLetter.toUpperCase() : ''}</span
-					>
-				</div>
+						{#if tile.fragment.letter !== null && tile.rune.letter !== null}
+							<span class="absolute inset-1 bg-purple-400" aria-hidden="true"></span>
+						{/if}
+						<span class="absolute top-1 left-2 z-10 text-base font-normal"
+							>{selectedX === x && selectedY === y ? '★' : `${x},${y}`}</span
+						>
+						<span class="relative z-10">{tile.fragment.letter ?? tile.rune.letter ?? ''}</span>
+						<span class="absolute right-2 bottom-1 z-10 text-xl font-normal"
+							>{selectedX === x && selectedY === y ? pendingLetter.toUpperCase() : ''}</span
+						>
+					</div>
+				{/each}
 			{/each}
-		{/each}
+		{/if}
 	</div>
 </div>
