@@ -160,18 +160,18 @@
 							onfocus={() => (activeIndex = index)}
 							oninput={(event) => handleInput(index, event)}
 							onkeydown={(event) => handleKeydown(index, event)}
-							class="size-28 border-2 border-black bg-white text-center text-4xl font-medium text-black uppercase caret-transparent outline-none focus:bg-black focus:text-white"
+							class="size-28 border-2 border-black bg-white text-center text-6xl font-medium text-black uppercase caret-transparent outline-none focus:bg-black focus:text-white"
 						/>
 					{/if}
 				</div>
 			{/each}
 		</div>
 		<div
-			class={`flex size-28 items-center justify-center text-4xl font-medium text-black uppercase ${lastCraftedRune ? 'border-2 border-black bg-purple-400' : 'invisible'}`}
+			class={`flex size-28 items-center justify-center font-medium text-black uppercase ${lastCraftedRune ? 'border-2 border-black bg-purple-400' : 'invisible'}`}
 			aria-hidden={!lastCraftedRune}
 			aria-label={lastCraftedRune ? `Last crafted rune: ${lastCraftedRune}` : undefined}
 		>
-			{lastCraftedRune}
+			<span class="text-6xl">{lastCraftedRune}</span>
 		</div>
 		<p class="h-6 text-center text-sm uppercase" aria-live="polite">{craftPrompt}</p>
 		<p class="h-6 text-center text-sm text-red-600" aria-live="assertive">{craftError}</p>

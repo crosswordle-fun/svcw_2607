@@ -176,7 +176,7 @@
 						{@const x = wrapIndex(visibleStartX + columnOffset, gridWidth)}
 						{@const tile = gameState.crossword.tiles[y][x]}
 						<div
-							class={`relative flex size-28 items-center justify-center border-2 text-center text-4xl font-medium uppercase outline-none ${tileColorClass(tile, selectedX === x && selectedY === y)}`}
+							class={`relative flex size-28 items-center justify-center border-2 text-center font-medium uppercase outline-none ${tileColorClass(tile, selectedX === x && selectedY === y)}`}
 							aria-label={`Square ${x},${y}, ${tile.fragment.letter ?? tile.rune.letter ?? 'empty'}`}
 						>
 							{#if tile.fragment.letter !== null && tile.rune.letter !== null}
@@ -185,7 +185,7 @@
 							<span class="absolute top-1 left-2 z-10 text-base font-normal"
 								>{selectedX === x && selectedY === y ? '★' : `${x},${y}`}</span
 							>
-							<span class="relative z-10">{tile.fragment.letter ?? tile.rune.letter ?? ''}</span>
+							<span class="relative z-10 text-6xl">{tile.fragment.letter ?? tile.rune.letter ?? ''}</span>
 							<span class="absolute right-2 bottom-1 z-10 text-xl font-normal"
 								>{selectedX === x && selectedY === y ? pendingLetter.toUpperCase() : ''}</span
 							>

@@ -6,6 +6,6 @@
 
 <div class="flex gap-2" aria-label={title}>
 	{#each title as letter, index (index)}
-		<Tile {letter} size="size-24" fontSize="text-2xl" />
+		<Tile {letter} size="size-28" fontSize="text-6xl" />
 	{/each}
 </div>

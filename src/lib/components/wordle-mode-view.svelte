@@ -104,10 +104,10 @@
 			>
 				{#each guess.hints as hint, index (index)}
 					<div
-						class={`flex size-28 items-center justify-center border-2 border-black text-4xl font-medium text-black uppercase ${tileClass(hint)}`}
+						class={`flex size-28 items-center justify-center border-2 border-black font-medium text-black uppercase ${tileClass(hint)}`}
 						aria-label={`${guess.word[index]}, ${hint}`}
 					>
-						{guess.word[index]}
+						<span class="text-6xl">{guess.word[index]}</span>
 					</div>
 				{/each}
 			</div>
