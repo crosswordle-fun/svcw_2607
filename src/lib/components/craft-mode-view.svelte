@@ -145,7 +145,7 @@
 	<div class="pointer-events-auto flex flex-col items-center gap-2">
 		<div class="grid grid-cols-3 gap-2" aria-label="Craft grid">
 			{#each dieFaces as hasSquare, position (position)}
-				<div class="size-24" aria-hidden={!hasSquare}>
+				<div class="size-28" aria-hidden={!hasSquare}>
 					{#if hasSquare}
 						{@const index = Math.floor(position / 2)}
 						<input
@@ -160,14 +160,14 @@
 							onfocus={() => (activeIndex = index)}
 							oninput={(event) => handleInput(index, event)}
 							onkeydown={(event) => handleKeydown(index, event)}
-							class="size-24 border-2 border-black bg-white text-center text-4xl font-medium text-black uppercase caret-transparent outline-none focus:bg-black focus:text-white"
+							class="size-28 border-2 border-black bg-white text-center text-4xl font-medium text-black uppercase caret-transparent outline-none focus:bg-black focus:text-white"
 						/>
 					{/if}
 				</div>
 			{/each}
 		</div>
 		<div
-			class={`flex size-24 items-center justify-center text-4xl font-medium text-black uppercase ${lastCraftedRune ? 'border-2 border-black bg-purple-400' : 'invisible'}`}
+			class={`flex size-28 items-center justify-center text-4xl font-medium text-black uppercase ${lastCraftedRune ? 'border-2 border-black bg-purple-400' : 'invisible'}`}
 			aria-hidden={!lastCraftedRune}
 			aria-label={lastCraftedRune ? `Last crafted rune: ${lastCraftedRune}` : undefined}
 		>

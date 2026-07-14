@@ -98,7 +98,7 @@
 			autocomplete="off"
 			aria-label={`Letter ${index + 1}`}
 			onfocus={() => (activeIndex = index)}
-			class="size-24 border-2 border-black bg-white text-center text-4xl font-medium text-black uppercase caret-transparent outline-none focus:bg-black focus:text-white"
+			class="size-28 border-2 border-black bg-white text-center text-4xl font-medium text-black uppercase caret-transparent outline-none focus:bg-black focus:text-white"
 			oninput={(event) => handleInput(index, event)}
 			onkeydown={(event) => handleKeydown(index, event)}
 		/>

@@ -176,7 +176,7 @@
 						{@const x = wrapIndex(visibleStartX + columnOffset, gridWidth)}
 						{@const tile = gameState.crossword.tiles[y][x]}
 						<div
-							class={`relative flex size-24 items-center justify-center border-2 text-center text-4xl font-medium uppercase outline-none ${tileColorClass(tile, selectedX === x && selectedY === y)}`}
+							class={`relative flex size-28 items-center justify-center border-2 text-center text-4xl font-medium uppercase outline-none ${tileColorClass(tile, selectedX === x && selectedY === y)}`}
 							aria-label={`Square ${x},${y}, ${tile.fragment.letter ?? tile.rune.letter ?? 'empty'}`}
 						>
 							{#if tile.fragment.letter !== null && tile.rune.letter !== null}
