@@ -47,7 +47,9 @@
 	function selectWord(index: number) {
 		const latestIndex = gameState.wordle.previousWords.length;
 		selectedWordIndex = Math.max(0, Math.min(index, latestIndex));
-		onWordChange?.(selectedWordIndex === latestIndex ? gameState.wordle.level : selectedWordIndex);
+		onWordChange?.(
+			selectedWordIndex === latestIndex ? gameState.wordle.level : selectedWordIndex + 1
+		);
 		const guesses =
 			selectedWordIndex === latestIndex
 				? gameState.wordle.currentWord.guesses
