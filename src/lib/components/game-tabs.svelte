@@ -17,7 +17,7 @@
 			type="button"
 			role="tab"
 			aria-selected={gameMode === tab.mode}
-			class={`w-48 cursor-pointer border-2 border-black px-6 py-3 text-lg font-medium uppercase transition-colors ${
+			class={`w-48 cursor-pointer border-2 border-black px-6 py-3 text-2xl font-medium uppercase transition-colors ${
 				gameMode === tab.mode
 					? 'bg-black text-white hover:bg-white hover:text-black'
 					: 'bg-white text-black hover:bg-black hover:text-white'

@@ -24,7 +24,7 @@
 		<TiledTitle {title} />
 		<button
 			type="button"
-			class="w-48 cursor-pointer border-2 border-black bg-white px-6 py-4 text-lg font-medium text-black uppercase transition-colors hover:bg-black hover:text-white"
+			class="w-48 cursor-pointer border-2 border-black bg-white px-6 py-4 text-2xl font-medium text-black uppercase transition-colors hover:bg-black hover:text-white"
 			onclick={() => goto(resolve('/game'))}
 		>
 			PLAY
