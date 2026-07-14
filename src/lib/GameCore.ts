@@ -3,6 +3,8 @@ export const WORDLE_LENGTH = 5;
 export const ALPHABET_SIZE = 26;
 export const WORDLE_EXPERIENCE_PER_LEVEL = 10;
 export const FRAGMENT_COST_PER_RUNE = 3;
+export const INITIAL_COIN_BALANCE = 100;
+export const COIN_COST_PER_LEVEL = 1;
 
 export type LetterCounts = Record<string, number>;
 export type Hint = 'Absent' | 'Present' | 'Correct';
@@ -31,6 +33,7 @@ export interface WordleState {
 	playerId: number;
 	level: number;
 	experience: number;
+	coin: number;
 	fragmentCounts: LetterCounts;
 	runeCounts: LetterCounts;
 	currentWord: Wordle;
@@ -104,12 +107,17 @@ export function createTileGrid(rows: number, tilesPerRow: number): Tile[][] {
 	return Array.from({ length: rows }, () => Array.from({ length: tilesPerRow }, createTile));
 }
 
+function startLevel(coin: number): number {
+	return Math.max(0, coin - COIN_COST_PER_LEVEL);
+}
+
 export function createGameState(): GameState {
 	return {
 		wordle: {
 			playerId: 0,
 			level: 1,
 			experience: 0,
+			coin: startLevel(INITIAL_COIN_BALANCE),
 			fragmentCounts: emptyCounts(),
 			runeCounts: emptyCounts(),
 			currentWord: createWordle(0, 1),
@@ -153,6 +161,7 @@ export function guessWordle(game: GameState, guess: string): void {
 	if (hints.every((hint) => hint === 'Correct')) {
 		const rewardLetter = truth[randomIndex(truth.length)];
 		wordle.level += 1;
+		wordle.coin = startLevel(wordle.coin);
 		wordle.experience += wordle.currentWord.experienceReward;
 		wordle.fragmentCounts[rewardLetter] += 1;
 		wordle.previousWords.push(wordle.currentWord);

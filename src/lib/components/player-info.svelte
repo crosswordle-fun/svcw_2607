@@ -4,11 +4,13 @@
 	let {
 		level,
 		experience,
+		coin,
 		fragmentCounts,
 		runeCounts
 	}: {
 		level: number;
 		experience: number;
+		coin: number;
 		fragmentCounts: LetterCounts;
 		runeCounts: LetterCounts;
 	} = $props();
@@ -23,8 +25,9 @@
 	class="flex items-center gap-2 text-base font-medium whitespace-nowrap text-black uppercase"
 	aria-label="Player info"
 >
-	<div class="flex h-7 w-48 items-center justify-center border-2 border-black bg-white px-3">
-		EXP {experience}
+	<div class="flex h-7 w-48 items-center justify-center gap-4 border-2 border-black bg-white px-3">
+		<span>EXP {experience}</span>
+		<span>COIN {coin}</span>
 	</div>
 	<div class="flex h-7 w-48 items-center justify-center border-2 border-black bg-white px-3">
 		LEVEL {level}

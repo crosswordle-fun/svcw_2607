@@ -62,6 +62,7 @@
 		<PlayerInfo
 			level={displayedLevel}
 			experience={gameState.wordle.experience}
+			coin={gameState.wordle.coin}
 			fragmentCounts={gameState.wordle.fragmentCounts}
 			runeCounts={gameState.wordle.runeCounts}
 		/>
