@@ -6,16 +6,25 @@
 	let {
 		gameState,
 		resourceMode,
-		onStateChange
+		onStateChange,
+		viewportRows = 5,
+		viewportColumns = 5
 	}: {
 		gameState: GameState;
 		resourceMode: 'fragments' | 'runes';
 		onStateChange?: (gameState: GameState) => void;
+		viewportRows?: number;
+		viewportColumns?: number;
 	} = $props();
+
+	function assertValidViewportSize(size: number, axis: string): void {
+		if (!Number.isInteger(size) || size < 3 || size % 2 === 0) {
+			throw new Error(`Crossword viewport${axis} must be an odd integer of at least 3`);
+		}
+	}
 	let selectedX = $state(4);
 	let selectedY = $state(4);
 	let pendingLetter = $state('');
-	const VIEW_SIZE = 5;
 	let gridWidth = $derived(gameState.crossword.tiles[0]?.length ?? 0);
 	let gridHeight = $derived(gameState.crossword.tiles.length);
 
@@ -24,8 +33,8 @@
 	}
 
 	// The viewport moves only when the selection would leave its inner 3x3 area.
-	let visibleStartX = $state(2);
-	let visibleStartY = $state(2);
+	let visibleStartX = $state(0);
+	let visibleStartY = $state(0);
 
 	function tileColorClass(
 		tile: (typeof gameState.crossword.tiles)[number][number],
@@ -45,6 +54,11 @@
 	}
 
 	onMount(() => {
+		assertValidViewportSize(viewportRows, 'Rows');
+		assertValidViewportSize(viewportColumns, 'Columns');
+		visibleStartX = wrapIndex(selectedX - Math.floor(viewportColumns / 2), gridWidth);
+		visibleStartY = wrapIndex(selectedY - Math.floor(viewportRows / 2), gridHeight);
+
 		function handleKeydown(event: KeyboardEvent) {
 			let nextX = selectedX;
 			let nextY = selectedY;
@@ -114,13 +128,13 @@
 			// destination is no longer at the viewport's outer edge.
 			if (deltaX < 0 && currentOffsetX === 1) {
 				visibleStartX = wrapIndex(nextX - 1, gridWidth);
-			} else if (deltaX > 0 && currentOffsetX === 3) {
-				visibleStartX = wrapIndex(nextX - 3, gridWidth);
+			} else if (deltaX > 0 && currentOffsetX === viewportColumns - 2) {
+				visibleStartX = wrapIndex(nextX - (viewportColumns - 2), gridWidth);
 			}
 			if (deltaY < 0 && currentOffsetY === 1) {
 				visibleStartY = wrapIndex(nextY - 1, gridHeight);
-			} else if (deltaY > 0 && currentOffsetY === 3) {
-				visibleStartY = wrapIndex(nextY - 3, gridHeight);
+			} else if (deltaY > 0 && currentOffsetY === viewportRows - 2) {
+				visibleStartY = wrapIndex(nextY - (viewportRows - 2), gridHeight);
 			}
 
 			selectedX = nextX;
@@ -133,14 +147,18 @@
 </script>
 
 <div class="pointer-events-none fixed inset-0 grid place-items-center">
-	<div class="grid grid-cols-5 gap-2" aria-label="Crossword grid viewport">
-		{#each Array.from({ length: VIEW_SIZE }) as _, rowOffset (rowOffset)}
+	<div
+		class="grid gap-2"
+		style={`grid-template-columns: repeat(${viewportColumns}, minmax(0, 1fr))`}
+		aria-label="Crossword grid viewport"
+	>
+		{#each Array.from({ length: viewportRows }) as _, rowOffset (rowOffset)}
 			{@const y = wrapIndex(visibleStartY + rowOffset, gridHeight)}
-			{#each Array.from({ length: VIEW_SIZE }) as _, columnOffset (columnOffset)}
+			{#each Array.from({ length: viewportColumns }) as _, columnOffset (columnOffset)}
 				{@const x = wrapIndex(visibleStartX + columnOffset, gridWidth)}
 				{@const tile = gameState.crossword.tiles[y][x]}
 				<div
-					class={`relative flex size-28 items-center justify-center border-2 text-center text-4xl font-medium uppercase outline-none ${tileColorClass(tile, selectedX === x && selectedY === y)}`}
+					class={`relative flex size-24 items-center justify-center border-2 text-center text-4xl font-medium uppercase outline-none ${tileColorClass(tile, selectedX === x && selectedY === y)}`}
 					aria-label={`Square ${x},${y}, ${tile.fragment.letter ?? tile.rune.letter ?? 'empty'}`}
 				>
 					{#if tile.fragment.letter !== null && tile.rune.letter !== null}

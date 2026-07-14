@@ -87,6 +87,8 @@
 		<CrossModeView
 			{gameState}
 			{resourceMode}
+			viewportRows={5}
+			viewportColumns={9}
 			onStateChange={(nextState) => (gameState = nextState)}
 		/>
 	{:else}
