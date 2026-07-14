@@ -19,10 +19,10 @@
 
 <section class="w-full text-black" aria-label={`Tile information for square ${x},${y}`}>
 	{#if tile}
-		<div class="grid min-w-[38rem] grid-cols-3 gap-2 text-center uppercase">
+		<div class="grid min-w-[38rem] grid-cols-9 gap-2 text-center uppercase">
 			{#each pieces as { kind, piece }}
 				<div
-					class={`row-start-1 min-w-0 border-2 border-black bg-white px-2 py-2 ${kind === 'Fragment' ? 'col-start-1' : 'col-start-3'}`}
+					class={`row-start-1 min-w-0 border-2 border-black bg-white px-2 py-2 ${kind === 'Fragment' ? 'col-start-1 col-span-4' : 'col-start-6 col-span-4'}`}
 					aria-label={`${kind} details`}
 				>
 					<div class="grid grid-cols-3 items-center">
@@ -42,7 +42,9 @@
 				</div>
 			{/each}
 
-			<div class="col-start-2 row-start-1 min-w-0 border-2 border-black bg-white px-2 py-2">
+			<div
+				class="col-start-5 col-span-1 row-start-1 min-w-0 border-2 border-black bg-white px-2 py-2"
+			>
 				<strong class="block text-xs">Tile</strong>
 				<b class="block truncate text-base">{x},{y}</b>
 			</div>
