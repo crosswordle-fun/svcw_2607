@@ -1,7 +1,7 @@
 export const WORDLE_LIST = ['apple', 'cross', 'jesus', 'slate', 'elton'] as const;
 export const WORDLE_LENGTH = 5;
 export const ALPHABET_SIZE = 26;
-export const WORDLE_EXPERIENCE_REWARD = 100;
+export const WORDLE_EXPERIENCE_PER_LEVEL = 10;
 export const FRAGMENT_COST_PER_RUNE = 3;
 
 export type LetterCounts = Record<string, number>;
@@ -89,14 +89,14 @@ export function createTile(): Tile {
 	};
 }
 
-export function createWordle(index: number): Wordle {
+export function createWordle(index: number, level: number): Wordle {
 	const word =
 		WORDLE_LIST[((index % WORDLE_LIST.length) + WORDLE_LIST.length) % WORDLE_LIST.length];
 
 	return {
 		truth: word,
 		guesses: [],
-		experienceReward: WORDLE_EXPERIENCE_REWARD
+		experienceReward: level * WORDLE_EXPERIENCE_PER_LEVEL
 	};
 }
 
@@ -108,11 +108,11 @@ export function createGameState(): GameState {
 	return {
 		wordle: {
 			playerId: 0,
-			level: 0,
+			level: 1,
 			experience: 0,
 			fragmentCounts: emptyCounts(),
 			runeCounts: emptyCounts(),
-			currentWord: createWordle(0),
+			currentWord: createWordle(0, 1),
 			previousWords: []
 		},
 		// The crossword is supplied by the backend. Keep the local fallback
@@ -156,7 +156,7 @@ export function guessWordle(game: GameState, guess: string): void {
 		wordle.experience += wordle.currentWord.experienceReward;
 		wordle.fragmentCounts[rewardLetter] += 1;
 		wordle.previousWords.push(wordle.currentWord);
-		wordle.currentWord = createWordle(randomIndex(WORDLE_LIST.length));
+		wordle.currentWord = createWordle(randomIndex(WORDLE_LIST.length), wordle.level);
 	}
 }
 

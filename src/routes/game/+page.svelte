@@ -14,7 +14,7 @@
 	type GameMode = 'cross' | 'wordle' | 'craft';
 
 	let gameState = $state<GameState>(createGameState());
-	let displayedLevel = $state(0);
+	let displayedLevel = $state(1);
 	let resourceMode: 'fragments' | 'runes' = $state('fragments');
 	let gameMode: GameMode = $state('wordle');
 	const leftLetters = 'ABCDEFGHIJKLM'.split('');
