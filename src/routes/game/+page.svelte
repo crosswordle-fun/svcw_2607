@@ -6,7 +6,7 @@
 	import FragRuneDisplay from '$lib/components/frag-rune-display.svelte';
 	import CrossModeView from '$lib/components/cross-mode-view.svelte';
 	import GameTabs from '$lib/components/game-tabs.svelte';
-	import LevelDisplay from '$lib/components/level-display.svelte';
+	import PlayerInfo from '$lib/components/player-info.svelte';
 	import WordleModeView from '$lib/components/wordle-mode-view.svelte';
 	import { createGameState, type GameState } from '$lib/GameCore';
 	import { getGameState, incrementDebugResources } from '$lib/gameApi';
@@ -59,7 +59,12 @@
 <main class="flex min-h-screen flex-col items-center gap-8 pt-8">
 	<GameTabs {gameMode} onModeChange={changeGameMode} />
 	<div class="-mt-4">
-		<LevelDisplay level={displayedLevel} />
+		<PlayerInfo
+			level={displayedLevel}
+			experience={gameState.wordle.experience}
+			fragmentCounts={gameState.wordle.fragmentCounts}
+			runeCounts={gameState.wordle.runeCounts}
+		/>
 	</div>
 	<div class="pointer-events-none fixed inset-x-4 top-1/2 flex -translate-y-1/2 justify-between">
 		<FragRuneDisplay
