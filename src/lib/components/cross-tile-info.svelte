@@ -4,7 +4,7 @@
 	let { tile, x, y }: { tile: Tile | undefined; x: number; y: number } = $props();
 
 	function playerLabel(piece: TilePiece): string {
-		return piece.playerId === null ? '—' : `Player ${piece.playerId}`;
+		return piece.playerName ?? '—';
 	}
 
 	let pieces: { kind: string; piece: TilePiece }[] = $derived(

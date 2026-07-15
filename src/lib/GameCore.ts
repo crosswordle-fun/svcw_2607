@@ -24,6 +24,7 @@ export interface CrosswordState {
 export interface TilePiece {
 	letter: string | null;
 	playerId: number | null;
+	playerName: string | null;
 	experienceReward: number;
 	coinReward: number;
 }
@@ -85,6 +86,7 @@ function createTilePiece(): TilePiece {
 	return {
 		letter: null,
 		playerId: null,
+		playerName: null,
 		experienceReward: 0,
 		coinReward: 0
 	};

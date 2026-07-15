@@ -9,7 +9,7 @@
 	import PlayerInfo from '$lib/components/player-info.svelte';
 	import WordleModeView from '$lib/components/wordle-mode-view.svelte';
 	import { createGameState, type GameState } from '$lib/GameCore';
-	import { getGameState, isAuthenticated } from '$lib/gameApi';
+	import { getGameState, incrementDebugResources, isAuthenticated } from '$lib/gameApi';
 
 	type GameMode = 'cross' | 'wordle' | 'craft';
 
@@ -48,6 +48,11 @@
 				event.preventDefault();
 				resourceMode = resourceMode === 'fragments' ? 'runes' : 'fragments';
 				return;
+			}
+			if (event.key === '0') {
+				incrementDebugResources()
+					.then((nextState) => (gameState = nextState))
+					.catch((error) => console.error('Unable to increment debug resources', error));
 			}
 			if (event.key === '1') changeGameMode('cross');
 			if (event.key === '2') changeGameMode('wordle');
