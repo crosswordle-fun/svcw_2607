@@ -37,6 +37,8 @@
 						<div class="min-w-0">
 							<span class="block text-xs">XP</span>
 							<b class="block">{piece.experienceReward}</b>
+							<span class="block text-xs">COINS</span>
+							<b class="block">{piece.coinReward}</b>
 						</div>
 					</div>
 				</div>

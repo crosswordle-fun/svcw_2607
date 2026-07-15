@@ -182,6 +182,20 @@
 							{#if tile.fragment.letter !== null && tile.rune.letter !== null}
 								<span class="absolute inset-1 bg-purple-400" aria-hidden="true"></span>
 							{/if}
+							{#if tile.fragment.coinReward > 0}
+								<span
+									class="absolute top-1 right-1 z-20 flex size-8 items-center justify-center border-2 border-black bg-blue-400 text-sm font-bold leading-none text-black"
+									aria-label={`Fragment coin reward: ${tile.fragment.coinReward}`}
+									>{tile.fragment.coinReward}</span
+								>
+							{/if}
+							{#if tile.rune.coinReward > 0}
+								<span
+									class="absolute right-1 bottom-1 z-20 flex size-8 items-center justify-center border-2 border-black bg-purple-400 text-sm font-bold leading-none text-black"
+									aria-label={`Rune coin reward: ${tile.rune.coinReward}`}
+									>{tile.rune.coinReward}</span
+								>
+							{/if}
 							<span class="absolute top-1 left-2 z-10 text-base font-normal"
 								>{selectedX === x && selectedY === y ? '★' : `${x},${y}`}</span
 							>

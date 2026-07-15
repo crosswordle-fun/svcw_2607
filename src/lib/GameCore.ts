@@ -2,6 +2,9 @@ export const WORDLE_LIST = ['apple', 'cross', 'jesus', 'slate', 'elton'] as cons
 export const WORDLE_LENGTH = 5;
 export const ALPHABET_SIZE = 26;
 export const WORDLE_EXPERIENCE_PER_LEVEL = 10;
+export const CROSSWORD_GRID_SIZE = 25;
+export const CROSSWORD_COIN_REWARD_COUNT = 25;
+export const COIN_REWARD_VALUES = [5, 10, 25, 50] as const;
 export const FRAGMENT_COST_PER_RUNE = 3;
 export const INITIAL_COIN_BALANCE = 100;
 export const COIN_COST_PER_LEVEL = 1;
@@ -22,6 +25,7 @@ export interface TilePiece {
 	letter: string | null;
 	playerId: number | null;
 	experienceReward: number;
+	coinReward: number;
 }
 
 export interface Tile {
@@ -81,7 +85,8 @@ function createTilePiece(): TilePiece {
 	return {
 		letter: null,
 		playerId: null,
-		experienceReward: 0
+		experienceReward: 0,
+		coinReward: 0
 	};
 }
 
@@ -107,6 +112,26 @@ export function createTileGrid(rows: number, tilesPerRow: number): Tile[][] {
 	return Array.from({ length: rows }, () => Array.from({ length: tilesPerRow }, createTile));
 }
 
+/** Randomly assigns exactly the configured number of coin rewards to tiles. */
+export function disperseCoinRewards(tiles: Tile[][]): void {
+	for (const row of tiles) {
+		for (const tile of row) {
+			tile.fragment.coinReward = 0;
+			tile.rune.coinReward = 0;
+		}
+	}
+	const candidates = tiles.flatMap((row, y) => row.map((_, x) => ({ x, y })));
+	for (let i = candidates.length - 1; i > 0; i--) {
+		const j = randomIndex(i + 1);
+		[candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+	}
+
+	for (const { x, y } of candidates.slice(0, Math.min(CROSSWORD_COIN_REWARD_COUNT, candidates.length))) {
+		const piece = randomIndex(2) === 0 ? tiles[y][x].fragment : tiles[y][x].rune;
+		piece.coinReward = COIN_REWARD_VALUES[randomIndex(COIN_REWARD_VALUES.length)];
+	}
+}
+
 function startLevel(coin: number): number {
 	return Math.max(0, coin - COIN_COST_PER_LEVEL);
 }
@@ -123,9 +148,11 @@ export function createGameState(): GameState {
 			currentWord: createWordle(0, 1),
 			previousWords: []
 		},
-		// The crossword is supplied by the backend. Keep the local fallback
-		// dimensionless so it cannot drift from the server's grid size.
-		crossword: { tiles: [] }
+		crossword: (() => {
+			const tiles = createTileGrid(CROSSWORD_GRID_SIZE, CROSSWORD_GRID_SIZE);
+			disperseCoinRewards(tiles);
+			return { tiles };
+		})()
 	};
 }
 
@@ -178,6 +205,8 @@ export function placeFragment(game: GameState, letter: string, x: number, y: num
 	game.wordle.fragmentCounts[letter] -= 1;
 	tile.fragment.letter = letter;
 	tile.fragment.playerId = game.wordle.playerId;
+	game.wordle.coin += tile.fragment.coinReward;
+	tile.fragment.coinReward = 0;
 }
 
 export function placeRune(game: GameState, letter: string, x: number, y: number): void {
@@ -195,6 +224,8 @@ export function placeRune(game: GameState, letter: string, x: number, y: number)
 	game.wordle.runeCounts[letter] -= 1;
 	tile.rune.letter = letter;
 	tile.rune.playerId = game.wordle.playerId;
+	game.wordle.coin += tile.rune.coinReward;
+	tile.rune.coinReward = 0;
 }
 
 export function craftSelectedRune(game: GameState, letter: string): string | null {
