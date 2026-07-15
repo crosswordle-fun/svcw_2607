@@ -32,7 +32,7 @@
 						</div>
 						<div class="min-w-0">
 							<span class="block truncate text-xs">Placed by</span>
-							<b class="block truncate normal-case">{playerLabel(piece)}</b>
+							<b class="block truncate uppercase">{playerLabel(piece)}</b>
 						</div>
 						<div class="min-w-0">
 							<span class="block text-xs">XP</span>

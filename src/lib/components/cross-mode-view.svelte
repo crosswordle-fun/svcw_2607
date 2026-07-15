@@ -191,7 +191,7 @@
 							{/if}
 							{#if tile.rune.coinReward > 0}
 								<span
-									class="absolute right-1 bottom-1 z-20 flex size-8 items-center justify-center border-2 border-black bg-purple-400 text-sm font-bold leading-none text-black"
+									class="absolute bottom-1 left-1 z-20 flex size-8 items-center justify-center border-2 border-black bg-purple-400 text-sm font-bold leading-none text-black"
 									aria-label={`Rune coin reward: ${tile.rune.coinReward}`}
 									>{tile.rune.coinReward}</span
 								>
