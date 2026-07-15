@@ -9,7 +9,7 @@
 	import PlayerInfo from '$lib/components/player-info.svelte';
 	import WordleModeView from '$lib/components/wordle-mode-view.svelte';
 	import { createGameState, type GameState } from '$lib/GameCore';
-	import { getGameState, incrementDebugResources } from '$lib/gameApi';
+	import { getGameState, isAuthenticated } from '$lib/gameApi';
 
 	type GameMode = 'cross' | 'wordle' | 'craft';
 
@@ -27,6 +27,10 @@
 	}
 
 	onMount(() => {
+		if (!isAuthenticated()) {
+			goto(resolve('/'));
+			return;
+		}
 		getGameState()
 			.then((nextState) => {
 				gameState = nextState;
@@ -34,16 +38,16 @@
 			})
 			.catch((error) => console.error('Unable to connect to the game server', error));
 
+		// Temporary multiplayer synchronization until a WebSocket channel is added.
+		const syncTimer = window.setInterval(() => {
+			getGameState().then((nextState) => (gameState = nextState)).catch(() => undefined);
+		}, 2000);
+
 		function handleKeydown(event: KeyboardEvent) {
 			if (event.key === 'Tab') {
 				event.preventDefault();
 				resourceMode = resourceMode === 'fragments' ? 'runes' : 'fragments';
 				return;
-			}
-			if (event.key === '0') {
-				incrementDebugResources()
-					.then((nextState) => (gameState = nextState))
-					.catch((error) => console.error('Unable to update debug resources', error));
 			}
 			if (event.key === '1') changeGameMode('cross');
 			if (event.key === '2') changeGameMode('wordle');
@@ -52,7 +56,10 @@
 		}
 
 		window.addEventListener('keydown', handleKeydown);
-		return () => window.removeEventListener('keydown', handleKeydown);
+		return () => {
+			window.removeEventListener('keydown', handleKeydown);
+			window.clearInterval(syncTimer);
+		};
 	});
 </script>
 
