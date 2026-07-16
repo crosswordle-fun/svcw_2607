@@ -26,10 +26,17 @@
 		gameSession.displayedLevel = level === 'current' ? gameState.wordle.level : level;
 	}
 
+	$effect(() => {
+		// Re-sync when a route or its game data changes so the newest five guesses
+		// are visible even when the game state arrives after the page mounts.
+		displayedWord;
+		level;
+		syncView();
+	});
+
 	onMount(() => {
 		gameSession.gameMode = 'wordle';
 		gameSession.levelComplete = null;
-		syncView();
 		function handleGuessNavigation(event: KeyboardEvent) {
 			if (event.key === 'ArrowLeft' && previousLevel > 0) {
 				goto(resolve(`/game/wordle/${previousLevel}`));
