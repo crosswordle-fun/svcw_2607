@@ -1,14 +1,27 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	let { onSubmit }: { onSubmit: (word: string) => void } = $props();
-	let letters = $state(Array(5).fill(''));
+	let {
+		onSubmit,
+		onChange,
+		length = 5
+	}: {
+		onSubmit: (word: string) => void;
+		onChange?: (word: string) => void;
+		length?: number;
+	} = $props();
+	let letters = $state<string[]>(Array(5).fill(''));
 	let inputs: HTMLInputElement[] = [];
+
+	$effect(() => {
+		if (letters.length !== length) letters = Array(length).fill('');
+	});
 	let activeIndex = 0;
 
 	function setLetter(index: number, letter: string) {
 		letters[index] = letter;
 		inputs[index].value = letter;
+		onChange?.(letters.join('').toLowerCase());
 	}
 
 	function focusInput(index: number) {
@@ -36,6 +49,7 @@
 
 	onMount(() => {
 		focusInput(0);
+		if (length === 1) inputs[0]?.select();
 		window.addEventListener('keydown', handleGlobalKeydown);
 
 		return () => window.removeEventListener('keydown', handleGlobalKeydown);
@@ -69,6 +83,12 @@
 	}
 
 	function handleKeydown(index: number, event: KeyboardEvent) {
+		if (length === 1 && /^[a-zA-Z]$/.test(event.key)) {
+			event.preventDefault();
+			setLetter(index, event.key.toUpperCase());
+			return;
+		}
+
 		if (event.key === 'Enter') {
 			event.preventDefault();
 			submit();
