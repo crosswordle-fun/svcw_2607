@@ -9,8 +9,11 @@
 	let username = $state('');
 	let password = $state('');
 	let usernameInput: HTMLInputElement;
+	let submitButton: HTMLButtonElement;
+	let backButton: HTMLButtonElement;
 	let error = $state('');
 	let busy = $state(false);
+	let selectedAction = $state<'submit' | 'back'>('submit');
 
 	async function submit() {
 		error = '';
@@ -33,7 +36,21 @@
 		usernameInput?.focus();
 
 		function handleKeydown(event: KeyboardEvent) {
-			if (event.key === 'Escape') goto(resolve('/'));
+			if (event.key === 'Escape') {
+				goto(resolve('/'));
+				return;
+			}
+			if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+
+			const target = event.target;
+			if (event.key === 'ArrowDown' && (target === usernameInput || target === submitButton)) {
+				event.preventDefault();
+				(target === usernameInput ? submitButton : backButton).focus();
+			}
+			if (event.key === 'ArrowUp' && (target === submitButton || target === backButton)) {
+				event.preventDefault();
+				(target === submitButton ? usernameInput : submitButton).focus();
+			}
 		}
 
 		window.addEventListener('keydown', handleKeydown);
@@ -71,13 +88,24 @@
 				class="border-2 border-black bg-white p-3 text-black outline-none focus:bg-black focus:text-white"
 			/>
 			<button
+				bind:this={submitButton}
+				type="submit"
 				disabled={busy}
-				class="border-2 border-black bg-white px-6 py-3 text-xl text-black uppercase hover:bg-black hover:text-white disabled:cursor-wait disabled:opacity-50"
+				onfocus={() => (selectedAction = 'submit')}
+				class={`w-full border-2 border-black px-6 py-3 text-xl uppercase outline-none hover:bg-black hover:text-white disabled:cursor-wait disabled:opacity-50 ${selectedAction === 'submit' ? 'bg-black text-white' : 'bg-white text-black'}`}
 			>
 				{busy ? '...' : mode === 'login' ? 'LOG IN' : 'SIGN UP'}
 			</button>
+			<button
+				bind:this={backButton}
+				type="button"
+				onclick={() => goto(resolve('/'))}
+				onfocus={() => (selectedAction = 'back')}
+				class={`w-full border-2 border-black px-6 py-3 text-xl uppercase outline-none hover:bg-black hover:text-white ${selectedAction === 'back' ? 'bg-black text-white' : 'bg-white text-black'}`}
+			>
+				BACK TO HOME
+			</button>
 		</form>
 		<p class="h-5 text-sm text-red-600">{error}</p>
-		<a class="text-sm uppercase underline" href={resolve('/')}>BACK TO HOME</a>
 	</div>
 </main>
