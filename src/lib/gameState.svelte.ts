@@ -7,6 +7,12 @@ export interface LevelComplete {
 	experience: number;
 }
 
+export interface CraftComplete {
+	kind: 'select' | 'random';
+	rune: string;
+	recipe: string;
+}
+
 export type GameMode = 'cross' | 'wordle' | 'craft';
 export type ResourceMode = 'fragments' | 'runes';
 
@@ -16,5 +22,6 @@ export const gameSession = $state({
 	displayedLevel: 1,
 	resourceMode: 'fragments' as ResourceMode,
 	gameMode: 'wordle' as GameMode,
-	levelComplete: null as LevelComplete | null
+	levelComplete: null as LevelComplete | null,
+	craftComplete: null as CraftComplete | null
 });
