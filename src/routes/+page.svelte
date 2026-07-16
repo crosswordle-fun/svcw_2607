@@ -5,18 +5,29 @@
 
 	let loginLink: HTMLAnchorElement;
 	let signupLink: HTMLAnchorElement;
+	let controlsLink: HTMLAnchorElement;
 
 	onMount(() => {
 		loginLink.focus();
 
 		function handleKeydown(event: KeyboardEvent) {
+			if (
+				event.key !== 'ArrowDown' &&
+				event.key !== 'ArrowUp' &&
+				event.key !== 'ArrowLeft' &&
+				event.key !== 'ArrowRight'
+			)
+				return;
+			event.preventDefault();
+			const current = document.activeElement;
 			if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
-				event.preventDefault();
-				signupLink.focus();
-			}
-			if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
-				event.preventDefault();
-				loginLink.focus();
+				if (current === loginLink) signupLink.focus();
+				else if (current === signupLink) controlsLink.focus();
+				else loginLink.focus();
+			} else {
+				if (current === controlsLink) signupLink.focus();
+				else if (current === signupLink) loginLink.focus();
+				else loginLink.focus();
 			}
 		}
 
@@ -42,6 +53,13 @@
 				class="border-2 border-black bg-white px-6 py-3 text-center text-xl text-black uppercase outline-none focus:bg-black focus:text-white hover:bg-black hover:text-white"
 			>
 				SIGN UP
+			</a>
+			<a
+				bind:this={controlsLink}
+				href={resolve('/tutorial/controls/1')}
+				class="border-2 border-black bg-white px-6 py-3 text-center text-xl text-black uppercase outline-none focus:bg-black focus:text-white hover:bg-black hover:text-white"
+			>
+				TUTORIAL
 			</a>
 		</nav>
 	</div>
