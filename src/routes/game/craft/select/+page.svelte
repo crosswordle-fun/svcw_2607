@@ -17,14 +17,23 @@
 	onMount(() => {
 		gameSession.gameMode = 'craft';
 		input?.focus();
+		input?.select();
 	});
 
-	function handleInput(event: Event) {
-		letter = (event.currentTarget as HTMLInputElement).value
-			.replace(/[^a-zA-Z]/g, '')
-			.slice(-1)
-			.toUpperCase();
+	function setLetter(nextLetter: string) {
+		letter = nextLetter;
+		if (input) input.value = nextLetter;
+		input?.select();
 		errorMessage = '';
+	}
+
+	function handleInput(event: Event) {
+		setLetter(
+			(event.currentTarget as HTMLInputElement).value
+				.replace(/[^a-zA-Z]/g, '')
+				.slice(-1)
+				.toUpperCase()
+		);
 	}
 
 	async function craft() {
@@ -67,18 +76,27 @@
 				autocomplete="off"
 				aria-label="Fragment letter"
 				oninput={handleInput}
-				onkeydown={(event) => event.key === 'Enter' && (event.preventDefault(), craft())}
+				onkeydown={(event) => {
+					if (event.key === 'Enter') {
+						event.preventDefault();
+						craft();
+					} else if (/^[a-zA-Z]$/.test(event.key)) {
+						event.preventDefault();
+						setLetter(event.key.toUpperCase());
+					}
+				}}
 				class="size-28 border-2 border-black bg-white text-center text-6xl uppercase caret-transparent outline-none focus:bg-black focus:text-white"
 			/>
 			<span class="text-sm">AVAILABLE: {count} &nbsp; COST: 3</span>
 		</div>
 		<p class="h-6 text-red-600" aria-live="assertive">{errorMessage}</p>
-		<div class="flex gap-3">
-			<button class="border-2 border-black px-5 py-2" onclick={() => goto(resolve('/game/craft'))}
-				>BACK</button
+		<div class="flex w-48 flex-col gap-3">
+			<button
+				class="w-full border-2 border-black px-5 py-2"
+				onclick={() => goto(resolve('/game/craft'))}>BACK</button
 			>
 			<button
-				class="border-2 border-black bg-black px-5 py-2 text-white disabled:opacity-40"
+				class="w-full border-2 border-black bg-black px-5 py-2 text-white disabled:opacity-40"
 				disabled={!canCraft}
 				onclick={craft}
 			>
