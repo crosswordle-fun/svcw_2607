@@ -28,6 +28,7 @@
 
 	onMount(() => {
 		gameSession.gameMode = 'wordle';
+		gameSession.levelComplete = null;
 		syncView();
 		function handleGuessNavigation(event: KeyboardEvent) {
 			if (event.key === 'ArrowLeft' && previousLevel > 0) {
@@ -61,8 +62,27 @@
 
 	async function submitGuess(word: string) {
 		try {
+			const previousLevel = gameState.wordle.level;
+			const previousFragments = { ...gameState.wordle.fragmentCounts };
 			const nextState = await submitWordleGuess(word);
+			const completedWord = nextState.wordle.previousWords.at(-1);
+
 			gameSession.gameState = nextState;
+			if (nextState.wordle.level > previousLevel && completedWord) {
+				const rewardLetter = Object.keys(nextState.wordle.fragmentCounts).find(
+					(letter) => nextState.wordle.fragmentCounts[letter] > (previousFragments[letter] ?? 0)
+				);
+
+				gameSession.levelComplete = {
+					level: previousLevel,
+					word: completedWord.truth,
+					fragment: rewardLetter ?? completedWord.truth[0],
+					experience: completedWord.experienceReward
+				};
+				gameSession.displayedLevel = previousLevel;
+				goto(resolve('/game/wordle/level-complete'));
+				return;
+			}
 			syncView();
 		} catch (error) {
 			console.error('Unable to submit Wordle guess', error);
