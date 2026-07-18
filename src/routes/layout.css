@@ -15,3 +15,8 @@ textarea,
 select {
 	font-family: 'Tiny5', sans-serif;
 }
+
+html,
+body {
+	overflow: hidden;
+}
