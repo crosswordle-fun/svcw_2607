@@ -50,6 +50,8 @@ export interface Wordle {
 	truth: string;
 	guesses: Guess[];
 	experienceReward: number;
+	fragmentReward: string | null;
+	fragmentRewardIndex: number | null;
 }
 
 export interface Guess {
@@ -107,7 +109,9 @@ export function createWordle(index: number, level: number): Wordle {
 	return {
 		truth: word,
 		guesses: [],
-		experienceReward: level * WORDLE_EXPERIENCE_PER_LEVEL
+		experienceReward: level * WORDLE_EXPERIENCE_PER_LEVEL,
+		fragmentReward: null,
+		fragmentRewardIndex: null
 	};
 }
 
@@ -204,7 +208,10 @@ export function guessWordle(game: GameState, guess: string): void {
 	wordle.currentWord.guesses.push({ word: guess, hints });
 
 	if (hints.every((hint) => hint === 'Correct')) {
-		const rewardLetter = truth[randomIndex(truth.length)];
+		const fragmentRewardIndex = randomIndex(truth.length);
+		const rewardLetter = truth[fragmentRewardIndex];
+		wordle.currentWord.fragmentReward = rewardLetter;
+		wordle.currentWord.fragmentRewardIndex = fragmentRewardIndex;
 		wordle.level += 1;
 		wordle.levelStarted = false;
 		wordle.experience += wordle.currentWord.experienceReward;

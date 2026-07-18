@@ -32,7 +32,6 @@
 </script>
 
 <section class="flex w-full max-w-3xl flex-col gap-4 px-4 text-black uppercase">
-	<h1 class="text-center text-2xl">WORDLE LEVELS</h1>
 	{#if errorMessage}
 		<p class="border-2 border-red-600 bg-red-100 px-4 py-3 text-center text-red-700" role="alert">
 			{errorMessage}
@@ -43,17 +42,25 @@
 			{@const level = gameSession.gameState.wordle.level - previousWords.length + index}
 			<a
 				href={resolve(`/game/wordle/${level}`)}
-				class="flex min-h-20 items-center gap-4 border-2 border-black bg-white px-4 py-3 hover:bg-gray-100"
+				class="flex min-h-20 flex-wrap items-center gap-4 border-2 border-black bg-white px-4 py-3 hover:bg-gray-100"
 			>
 				<span class="w-20 text-sm">LEVEL {level}</span>
 				<span class="flex gap-1" aria-label={`Completed word ${word.truth}`}>
 					{#each word.truth.toUpperCase() as letter, letterIndex (letterIndex)}
-						<span class="flex size-10 items-center justify-center border-2 border-black bg-green-400 text-xl">
+						<span
+							class:bg-blue-400={word.fragmentRewardIndex === letterIndex}
+							class:bg-green-400={word.fragmentRewardIndex !== letterIndex}
+							class="flex size-10 items-center justify-center border-2 border-black text-xl"
+						>
 							{letter}
 						</span>
 					{/each}
 				</span>
-				<span class="ml-auto text-sm">{word.guesses.length} GUESSES</span>
+				<span class="ml-auto flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-sm">
+					<span>+{word.experienceReward} XP</span>
+					<span>FRAGMENT {word.fragmentReward?.toUpperCase() ?? '—'}</span>
+					<span>{word.guesses.length} GUESSES</span>
+				</span>
 			</a>
 		{/each}
 		<div class="flex min-h-20 items-center gap-4 border-2 border-black bg-yellow-300 px-4 py-3">
@@ -62,9 +69,12 @@
 			{#if gameSession.gameState.wordle.levelStarted}
 				<a class="ml-auto border-2 border-black bg-black px-5 py-2 text-white hover:bg-white hover:text-black" href={resolve('/game/wordle/play')}>CONTINUE</a>
 			{:else}
-				<button class="ml-auto border-2 border-black bg-black px-5 py-2 text-white hover:bg-white hover:text-black disabled:cursor-wait disabled:opacity-50" onclick={start} disabled={starting}>
-					{starting ? 'STARTING...' : 'START'}
-				</button>
+				<div class="ml-auto flex shrink-0 items-center gap-2">
+					<span class="whitespace-nowrap text-xs sm:text-sm">-1 COIN</span>
+					<button class="border-2 border-black bg-black px-5 py-2 text-white hover:bg-white hover:text-black disabled:cursor-wait disabled:opacity-50" onclick={start} disabled={starting}>
+						{starting ? 'STARTING...' : 'START'}
+					</button>
+				</div>
 			{/if}
 		</div>
 	</div>
