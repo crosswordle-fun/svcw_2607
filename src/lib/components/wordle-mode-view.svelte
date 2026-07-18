@@ -4,7 +4,7 @@
 	import { resolve } from '$app/paths';
 	import type { GameState, Hint } from '$lib/GameCore';
 	import { gameSession } from '$lib/gameState.svelte';
-	import { submitWordleGuess } from '$lib/gameApi';
+	import { GameApiError, submitWordleGuess } from '$lib/gameApi';
 	import WordleInput from '$lib/components/wordle-input.svelte';
 
 	let { gameState, level }: { gameState: GameState; level: number | 'current' } = $props();
@@ -13,11 +13,19 @@
 	let displayedWord = $derived(
 		level === 'current' ? gameState.wordle.currentWord : gameState.wordle.previousWords[level - 1]
 	);
-	let visibleStart = $derived(Math.max(0, visibleEnd - 5));
-	let visibleGuesses = $derived(displayedWord?.guesses.slice(visibleStart, visibleEnd) ?? []);
+	let effectiveVisibleEnd = $derived(
+		visibleEnd === 0 ? (displayedWord?.guesses.length ?? 0) : visibleEnd
+	);
+	let visibleStart = $derived(Math.max(0, effectiveVisibleEnd - 5));
+	let visibleGuesses = $derived(displayedWord?.guesses.slice(visibleStart, effectiveVisibleEnd) ?? []);
+	let effectiveSelectedGuessIndex = $derived(
+		selectedGuessIndex < 0 ? effectiveVisibleEnd - 1 : selectedGuessIndex
+	);
 	let isCurrent = $derived(level === 'current');
 	let previousLevel = $derived(level === 'current' ? gameState.wordle.level - 1 : level - 1);
 	let nextLevel = $derived(level === 'current' ? null : level + 1);
+	let submitting = $state(false);
+	let errorMessage = $state('');
 
 	function syncView() {
 		const guesses = displayedWord?.guesses ?? [];
@@ -25,14 +33,6 @@
 		selectedGuessIndex = guesses.length - 1;
 		gameSession.displayedLevel = level === 'current' ? gameState.wordle.level : level;
 	}
-
-	$effect(() => {
-		// Re-sync when a route or its game data changes so the newest five guesses
-		// are visible even when the game state arrives after the page mounts.
-		displayedWord;
-		level;
-		syncView();
-	});
 
 	onMount(() => {
 		gameSession.gameMode = 'wordle';
@@ -60,7 +60,7 @@
 				Math.min(selectedGuessIndex + direction, guesses.length - 1)
 			);
 			if (selectedGuessIndex < visibleStart) visibleEnd = selectedGuessIndex + 5;
-			if (selectedGuessIndex >= visibleEnd) visibleEnd = selectedGuessIndex + 1;
+			if (selectedGuessIndex >= effectiveVisibleEnd) visibleEnd = selectedGuessIndex + 1;
 		}
 
 		window.addEventListener('keydown', handleGuessNavigation);
@@ -68,6 +68,9 @@
 	});
 
 	async function submitGuess(word: string) {
+		if (submitting || !gameState.wordle.levelStarted) return;
+		submitting = true;
+		errorMessage = '';
 		try {
 			const previousLevel = gameState.wordle.level;
 			const previousFragments = { ...gameState.wordle.fragmentCounts };
@@ -87,12 +90,18 @@
 					experience: completedWord.experienceReward
 				};
 				gameSession.displayedLevel = previousLevel;
-				goto(resolve('/game/wordle/level-complete'));
+				goto(resolve('/game/wordle/current'));
 				return;
 			}
 			syncView();
 		} catch (error) {
-			console.error('Unable to submit Wordle guess', error);
+			if (error instanceof GameApiError && error.code === 'INSUFFICIENT_COINS') {
+				errorMessage = 'INSUFFICIENT COINS';
+			} else {
+				errorMessage = error instanceof Error ? error.message : 'UNABLE TO SUBMIT GUESS';
+			}
+		} finally {
+			submitting = false;
 		}
 	}
 
@@ -104,11 +113,12 @@
 </script>
 
 <div class="pointer-events-none fixed inset-0 flex flex-col items-center justify-end gap-6 pb-24">
+	{#if errorMessage}<div class="pointer-events-auto border-2 border-red-600 bg-red-100 px-4 py-2 text-red-700" role="alert">{errorMessage}</div>{/if}
 	<div class="flex flex-col gap-4" aria-label="Wordle guesses">
 		{#each visibleGuesses as guess, guessIndex (level + ':' + (visibleStart + guessIndex))}
 			<div
-				class={`flex gap-2 ${selectedGuessIndex === visibleStart + guessIndex ? 'ring-4 ring-black ring-offset-4 ring-offset-white' : ''}`}
-				aria-current={selectedGuessIndex === visibleStart + guessIndex ? 'true' : undefined}
+				class={`flex gap-2 ${effectiveSelectedGuessIndex === visibleStart + guessIndex ? 'ring-4 ring-black ring-offset-4 ring-offset-white' : ''}`}
+				aria-current={effectiveSelectedGuessIndex === visibleStart + guessIndex ? 'true' : undefined}
 			>
 				{#each guess.hints as hint, index (index)}
 					<div

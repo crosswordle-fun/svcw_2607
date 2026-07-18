@@ -4,6 +4,18 @@ const API_URL = 'http://localhost:3000';
 
 export interface AuthResponse { token: string; username: string; game: GameState }
 
+export class GameApiError extends Error {
+	status: number;
+	code: string | null;
+
+	constructor(status: number, message: string, code: string | null = null) {
+		super(message);
+		this.name = 'GameApiError';
+		this.status = status;
+		this.code = code;
+	}
+}
+
 function token(): string | null {
 	return typeof localStorage === 'undefined' ? null : localStorage.getItem('crosswordle_token');
 }
@@ -14,7 +26,17 @@ async function request(path: string, options?: RequestInit): Promise<GameState> 
 	const currentToken = token();
 	if (currentToken) headers.set('Authorization', `Bearer ${currentToken}`);
 	const response = await fetch(`${API_URL}${path}`, { ...options, headers });
-	if (!response.ok) throw new Error(`Game server request failed: ${response.status}`);
+	if (!response.ok) {
+		let body: { message?: string; error?: string; code?: string } = {};
+		try {
+			body = await response.json();
+		} catch {
+			// Some failed responses have no JSON body.
+		}
+		const code = body.code ?? body.error ?? null;
+		const message = body.message ?? code ?? `Game server request failed (${response.status})`;
+		throw new GameApiError(response.status, message, code);
+	}
 	return response.json() as Promise<GameState>;
 }
 
@@ -35,6 +57,9 @@ export function signup(username: string, password: string) { return authenticate
 export function isAuthenticated() { return Boolean(token()); }
 export function logout() { localStorage.removeItem('crosswordle_token'); localStorage.removeItem('crosswordle_username'); }
 export function getGameState(): Promise<GameState> { return request('/api/game'); }
+export function startWordleLevel(): Promise<GameState> {
+	return request('/api/game/wordle/start', { method: 'POST' });
+}
 export function submitWordleGuess(guess: string): Promise<GameState> { return request('/api/game/wordle/guess', { method: 'POST', body: JSON.stringify({ guess }) }); }
 export function submitFragment(letter: string, x: number, y: number): Promise<GameState> { return request('/api/game/crossword/fragment', { method: 'POST', body: JSON.stringify({ letter, x, y }) }); }
 export function submitRune(letter: string, x: number, y: number): Promise<GameState> { return request('/api/game/crossword/rune', { method: 'POST', body: JSON.stringify({ letter, x, y }) }); }

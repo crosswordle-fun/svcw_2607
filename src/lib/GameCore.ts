@@ -37,6 +37,7 @@ export interface Tile {
 export interface WordleState {
 	playerId: number;
 	level: number;
+	levelStarted: boolean;
 	experience: number;
 	coin: number;
 	fragmentCounts: LetterCounts;
@@ -134,8 +135,11 @@ export function disperseCoinRewards(tiles: Tile[][]): void {
 	}
 }
 
-function startLevel(coin: number): number {
-	return Math.max(0, coin - COIN_COST_PER_LEVEL);
+export class InsufficientCoinsError extends Error {
+	constructor() {
+		super('INSUFFICIENT_COINS');
+		this.name = 'InsufficientCoinsError';
+	}
 }
 
 export function createGameState(): GameState {
@@ -143,8 +147,9 @@ export function createGameState(): GameState {
 		wordle: {
 			playerId: 0,
 			level: 1,
+			levelStarted: false,
 			experience: 0,
-			coin: startLevel(INITIAL_COIN_BALANCE),
+			coin: INITIAL_COIN_BALANCE,
 			fragmentCounts: emptyCounts(),
 			runeCounts: emptyCounts(),
 			currentWord: createWordle(0, 1),
@@ -158,10 +163,21 @@ export function createGameState(): GameState {
 	};
 }
 
+/** Start the current level and charge its entry cost exactly once. */
+export function startWordleLevel(game: GameState): void {
+	const wordle = game.wordle;
+	if (wordle.levelStarted) return;
+	if (wordle.coin < COIN_COST_PER_LEVEL) throw new InsufficientCoinsError();
+
+	wordle.coin -= COIN_COST_PER_LEVEL;
+	wordle.levelStarted = true;
+}
+
 export function guessWordle(game: GameState, guess: string): void {
 	if (!isWord(guess)) return;
 
 	const wordle = game.wordle;
+	if (!wordle.levelStarted) return;
 	const truth = wordle.currentWord.truth;
 	const hints = emptyHints();
 	const available = Array(WORDLE_LENGTH).fill(true);
@@ -190,7 +206,7 @@ export function guessWordle(game: GameState, guess: string): void {
 	if (hints.every((hint) => hint === 'Correct')) {
 		const rewardLetter = truth[randomIndex(truth.length)];
 		wordle.level += 1;
-		wordle.coin = startLevel(wordle.coin);
+		wordle.levelStarted = false;
 		wordle.experience += wordle.currentWord.experienceReward;
 		wordle.fragmentCounts[rewardLetter] += 1;
 		wordle.previousWords.push(wordle.currentWord);
