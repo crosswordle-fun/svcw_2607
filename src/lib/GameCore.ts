@@ -40,6 +40,7 @@ export interface WordleState {
 	levelStarted: boolean;
 	experience: number;
 	coin: number;
+	crosswordCoinsEarned: number;
 	fragmentCounts: LetterCounts;
 	runeCounts: LetterCounts;
 	currentWord: Wordle;
@@ -133,7 +134,10 @@ export function disperseCoinRewards(tiles: Tile[][]): void {
 		[candidates[i], candidates[j]] = [candidates[j], candidates[i]];
 	}
 
-	for (const { x, y } of candidates.slice(0, Math.min(CROSSWORD_COIN_REWARD_COUNT, candidates.length))) {
+	for (const { x, y } of candidates.slice(
+		0,
+		Math.min(CROSSWORD_COIN_REWARD_COUNT, candidates.length)
+	)) {
 		const piece = randomIndex(2) === 0 ? tiles[y][x].fragment : tiles[y][x].rune;
 		piece.coinReward = COIN_REWARD_VALUES[randomIndex(COIN_REWARD_VALUES.length)];
 	}
@@ -154,6 +158,7 @@ export function createGameState(): GameState {
 			levelStarted: false,
 			experience: 0,
 			coin: INITIAL_COIN_BALANCE,
+			crosswordCoinsEarned: 0,
 			fragmentCounts: emptyCounts(),
 			runeCounts: emptyCounts(),
 			currentWord: createWordle(0, 1),

@@ -3,6 +3,7 @@
 	import type { GameState } from '$lib/GameCore';
 	import CrossTileInfo from '$lib/components/cross-tile-info.svelte';
 	import { submitFragment, submitRune } from '$lib/gameApi';
+	import { refreshLeaderboards } from '$lib/gameState.svelte';
 
 	let {
 		gameState,
@@ -110,6 +111,9 @@
 						.then((nextState) => {
 							gameState = nextState;
 							onStateChange?.(nextState);
+							refreshLeaderboards().catch((error) =>
+								console.error('Unable to refresh leaderboards', error)
+							);
 							if (
 								nextState.crossword.tiles[selectedY]?.[selectedX]?.fragment.letter === pendingLetter
 							) {
@@ -122,6 +126,9 @@
 						.then((nextState) => {
 							gameState = nextState;
 							onStateChange?.(nextState);
+							refreshLeaderboards().catch((error) =>
+								console.error('Unable to refresh leaderboards', error)
+							);
 							if (
 								nextState.crossword.tiles[selectedY]?.[selectedX]?.rune.letter === pendingLetter
 							) {
@@ -170,9 +177,9 @@
 			aria-label="Crossword grid viewport"
 		>
 			{#if gridWidth > 0 && gridHeight > 0}
-				{#each Array.from({ length: viewportRows }) as _, rowOffset (rowOffset)}
+				{#each Array.from({ length: viewportRows }), rowOffset (rowOffset)}
 					{@const y = wrapIndex(visibleStartY + rowOffset, gridHeight)}
-					{#each Array.from({ length: viewportColumns }) as _, columnOffset (columnOffset)}
+					{#each Array.from({ length: viewportColumns }), columnOffset (columnOffset)}
 						{@const x = wrapIndex(visibleStartX + columnOffset, gridWidth)}
 						{@const tile = gameState.crossword.tiles[y][x]}
 						<div
@@ -199,7 +206,9 @@
 							<span class="absolute top-1 left-2 z-10 text-base font-normal"
 								>{selectedX === x && selectedY === y ? '★' : `${x},${y}`}</span
 							>
-							<span class="relative z-10 text-6xl">{tile.fragment.letter ?? tile.rune.letter ?? ''}</span>
+							<span class="relative z-10 text-6xl"
+								>{tile.fragment.letter ?? tile.rune.letter ?? ''}</span
+							>
 							<span class="absolute right-2 bottom-1 z-10 text-xl font-normal"
 								>{selectedX === x && selectedY === y ? pendingLetter.toUpperCase() : ''}</span
 							>
